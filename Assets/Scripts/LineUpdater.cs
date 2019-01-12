@@ -5,6 +5,11 @@ using UnityEngine;
 public class LineUpdater : MonoBehaviour {
 
 	private LineRenderer lineRenderer;
+	public GridManager gridManager;
+
+	private GameObject currentDot;
+	private Vector3 start;
+	private Vector3 end;
 	
 	void Start () {
 		lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -21,10 +26,25 @@ public class LineUpdater : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		currentDot = gridManager.GetCurrentDot();
+
+		if (currentDot != null && Input.GetMouseButton(0)) {
+			lineRenderer.enabled = true;
+			start = new Vector3(currentDot.transform.position.x, currentDot.transform.position.y, 0.0f );
+			end = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			end.z = 0;
+			Vector3[] points = new Vector3[] { start, end };
+			lineRenderer.SetPositions(points);
+		}
+		else {
+			lineRenderer.enabled = false;
+		}
+		/*
 		Vector3 start = new Vector2(0.0f,0.0f);
 		Vector3 end = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		end.z = 0;
 		Vector3[] points = new Vector3[] { start, end };
 		lineRenderer.SetPositions(points);
+		*/
 	}
 }
