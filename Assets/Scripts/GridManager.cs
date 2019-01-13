@@ -230,7 +230,10 @@ public class GridManager : MonoBehaviour {
 		dots[i,jSource].SetActive(true);
 		dots[i,jDestination] = dots[i,jSource];
 		dots[i,jSource] = null;
-		dots[i,jDestination].transform.position = new Vector3((float)i * distanceBetweenDots, (float)jDestination * distanceBetweenDots);
+
+		Vector3 startPosition = new Vector3((float)i * distanceBetweenDots, (float)jSource * distanceBetweenDots);
+		Vector3 stopPosition = new Vector3((float)i * distanceBetweenDots, (float)jDestination * distanceBetweenDots);
+		dots[i,jDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
 	}
 
 	private void ReplenishDots() {

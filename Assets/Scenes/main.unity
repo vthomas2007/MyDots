@@ -237,6 +237,7 @@ MonoBehaviour:
   dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
   dotScale: 0.52
   distanceBetweenDots: 1.43
+  lineWidth: 0.25
 --- !u!4 &1016040470
 Transform:
   m_ObjectHideFlags: 0

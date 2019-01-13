@@ -12,7 +12,12 @@ public class ColorRandomizer : MonoBehaviour {
 	static private Color PURPLE = new Color32(156, 93,  181, 255);
 
 	static public Color[] colors = { YELLOW, GREEN, BLUE, RED, PURPLE };
+
+	public bool easyMode = false;
 	
+	// TODO: Determine where this should live, putting it on the dot prevents
+	// the manager from having any say over the assigned color, how many colors
+	// to choose from, etc
 	void Start () {
 		int colorIndex = Random.Range(0, colors.Length);
 		spriteRenderer.color = colors[colorIndex];
