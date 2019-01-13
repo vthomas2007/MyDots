@@ -21,6 +21,8 @@ public class GridManager : MonoBehaviour {
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
+	private bool loopSelected = false;
+
 	void Start () {
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
@@ -85,14 +87,16 @@ public class GridManager : MonoBehaviour {
 				Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
 				Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(GetLastSelectedDot());
 
+				// TODO Look into breaking up this conditional, getting pretty unwieldy
 				if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
 					if (dotUnderCursor == GetSecondToLastSelectedDot()) {
 						selectedDots.RemoveAt(selectedDots.Count - 1);
 					}
-					else if (!InSelectedSet(dotUnderCursor)) {
+					else {
 						// TODO: Figure out how if there's a way around checking GetComponent so many times
-						if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
+						if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
 							selectedDots.Add(dotUnderCursor);
+							loopSelected = IsLoopSelected(); // Should only need this here for visual effects, sfx, etc
 						}
 					}
 				}
@@ -103,14 +107,19 @@ public class GridManager : MonoBehaviour {
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDots.Count > 1) {
-				foreach (GameObject dot in selectedDots) {
-					Destroy(dot);
+				if (IsLoopSelected()) {
+					RemoveAllDotsOfColor(GetSelectedDotColor());
+				}
+				else {
+					RemoveSelectedDots();
 				}
 
 				DropDots();
 				ReplenishDots();
+
 				gameState = GameStates.DroppingDots;
 			}
+
 			selectedDots.Clear();
 		}
 	}
@@ -155,8 +164,46 @@ public class GridManager : MonoBehaviour {
 		return ((int)Mathf.Abs(v1.x - v2.x) + (int)Mathf.Abs(v1.y - v2.y) == 1);
 	}
 
-	private bool InSelectedSet(GameObject dot) {
-		return selectedDots.Contains(dot);
+	private bool IsLoopSelected() {
+		HashSet<GameObject> uniqueSelectedDots = new HashSet<GameObject>();
+
+		foreach (GameObject dot in selectedDots) {
+			if (uniqueSelectedDots.Contains(dot)) {
+				return true;
+			}
+			uniqueSelectedDots.Add(dot);
+		}
+
+		return false;
+	}
+
+	private void RemoveSelectedDots() {
+		foreach (GameObject dot in selectedDots) {
+			Destroy(dot);
+		}
+	}
+
+	private void RemoveAllDotsOfColor(Color c) {
+		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
+			for (int i = 0; i < WIDTH; i++) {
+				if (GetDotColor(dots[i,j]) == c) {
+					Destroy(dots[i,j]);
+				}
+			}
+		}
+	}
+
+	private Color GetSelectedDotColor() {
+		return GetDotColor(selectedDots[0]);
+	}
+
+	private Color GetDotColor(GameObject dot) {
+		if (dot != null) {
+			// TODO: Again, figure out how if there's a way around checking GetComponent so many times
+			return dot.GetComponent<SpriteRenderer>().color;
+		}
+
+		throw new Exception("Trying to get color for a dot that doesn't exist");
 	}
 
 	private void DropDots() {
