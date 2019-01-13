@@ -150,7 +150,6 @@ public class GridManager : MonoBehaviour {
 		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == null) {
-					Debug.Log(String.Format("Dropping dot at {0}, {1}", i, j));
 					DropDot(i,j);
 				}
 			}
@@ -160,7 +159,6 @@ public class GridManager : MonoBehaviour {
 	private void DropDot(int i, int jDestination) {
 		int jSource = jDestination;
 		while (dots[i,jSource] == null && jSource < TOTAL_HEIGHT - 1) {
-			Debug.Log(String.Format("jNew: {0}", jSource));
 			jSource++;
 		}
 		if (dots[i,jSource] != null) {
