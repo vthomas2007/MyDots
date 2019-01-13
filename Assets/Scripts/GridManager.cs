@@ -146,8 +146,26 @@ public class GridManager : MonoBehaviour {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == null) {
 					Debug.Log(String.Format("Dropping dot at {0}, {1}", i, j));
+					DropDot(i,j);
 				}
 			}
 		}
+	}
+
+	private void DropDot(int i, int jDestination) {
+		int jSource = jDestination;
+		while (dots[i,jSource] == null && jSource < HEIGHT - 1) {
+			Debug.Log(String.Format("jNew: {0}", jSource));
+			jSource++;
+		}
+		if (dots[i,jSource] != null) {
+			MoveDot(i, jDestination, jSource);
+		}
+	}
+
+	private void MoveDot(int i, int jDestination, int jSource) {
+		dots[i,jDestination] = dots[i,jSource];
+		dots[i,jSource] = null;
+		dots[i,jDestination].transform.position = new Vector3((float)i * distanceBetweenDots, (float)jDestination * distanceBetweenDots);
 	}
 }
