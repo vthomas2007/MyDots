@@ -5,8 +5,9 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour {
 	private static int WIDTH = 6;
-	private static int HEIGHT = 6;
-	private GameObject[,] dots = new GameObject[WIDTH, HEIGHT];
+	private static int PLAYABLE_HEIGHT = 6;
+	private static int TOTAL_HEIGHT = PLAYABLE_HEIGHT * 2;
+	private GameObject[,] dots = new GameObject[WIDTH, TOTAL_HEIGHT];
 
 	public GameObject dotPrefab;
 
@@ -20,17 +21,23 @@ public class GridManager : MonoBehaviour {
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
-	// Use this for initialization
 	void Start () {
-		// TODO Move to method
-		for (int j = 0; j < HEIGHT; j++) {
+		for (int j = 0; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
-				dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
-				dots[i,j].transform.localScale = new Vector2(dotScale, dotScale);
+				CreateDot(i, j);
 			}
 		}
 
 		gameState = GameStates.Ready;
+	}
+
+	private void CreateDot(int i, int j) {
+		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
+		dots[i,j].transform.localScale = new Vector2(dotScale, dotScale);
+
+		if (j >= PLAYABLE_HEIGHT) {
+			dots[i,j].SetActive(false);
+		}
 	}
 	
 	void Update () {
@@ -63,7 +70,6 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButtonDown(0)) {
 			Collider2D clickedDotCollider = GetColliderUnderMouseCursor();
 			if (clickedDotCollider != null) {
-				Debug.Log(GetIndicesOfDot(clickedDotCollider.gameObject));
 				selectedDots.Add(clickedDotCollider.gameObject);
 			}
 		}
@@ -73,18 +79,16 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButton(0)) {
 			Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
 
-			if (dotUnderCursorCollider != null) {
+			if (dotUnderCursorCollider != null && selectedDots.Count > 0) {
 				GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
 
-				if (selectedDots.Count > 0) {
-					Vector2 indicesUnderCursor = GetIndicesOfDot(dotUnderCursor);
-					Vector2 indicesOfLastSelectedDot = GetIndicesOfDot(GetLastSelectedDot());
+				Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
+				Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(GetLastSelectedDot());
 
-					if (IndicesAreAdjacent(indicesUnderCursor, indicesOfLastSelectedDot) && !InSelectedSet(dotUnderCursor)) {
-						// TODO: Figure out how if there's a way around checking GetComponent so many times
-						if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
-							selectedDots.Add(dotUnderCursor);
-						}
+				if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot) && !InSelectedSet(dotUnderCursor)) {
+					// TODO: Figure out how if there's a way around checking GetComponent so many times
+					if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
+						selectedDots.Add(dotUnderCursor);
 					}
 				}
 			}
@@ -99,6 +103,7 @@ public class GridManager : MonoBehaviour {
 				}
 
 				DropDots();
+				ReplenishDots();
 				gameState = GameStates.DroppingDots;
 			}
 			selectedDots.Clear();
@@ -113,8 +118,8 @@ public class GridManager : MonoBehaviour {
 		return hit.collider;
 	}
 
-	private Vector2 GetIndicesOfDot(GameObject dot) {
-		for (int j = 0; j < HEIGHT; j++) {
+	private Vector2 GetCoordinatesOfDot(GameObject dot) {
+		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == dot) {
 					return new Vector2(i,j);
@@ -133,7 +138,7 @@ public class GridManager : MonoBehaviour {
 		return null;
 	}
 
-	private bool IndicesAreAdjacent(Vector2 v1, Vector2 v2) {
+	private bool CoordinatesAreAdjacent(Vector2 v1, Vector2 v2) {
 		return ((int)Mathf.Abs(v1.x - v2.x) + (int)Mathf.Abs(v1.y - v2.y) == 1);
 	}
 
@@ -142,7 +147,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		for (int j = 0; j < HEIGHT; j++) {
+		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == null) {
 					Debug.Log(String.Format("Dropping dot at {0}, {1}", i, j));
@@ -154,7 +159,7 @@ public class GridManager : MonoBehaviour {
 
 	private void DropDot(int i, int jDestination) {
 		int jSource = jDestination;
-		while (dots[i,jSource] == null && jSource < HEIGHT - 1) {
+		while (dots[i,jSource] == null && jSource < TOTAL_HEIGHT - 1) {
 			Debug.Log(String.Format("jNew: {0}", jSource));
 			jSource++;
 		}
@@ -164,8 +169,20 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void MoveDot(int i, int jDestination, int jSource) {
+		dots[i,jSource].SetActive(true);
 		dots[i,jDestination] = dots[i,jSource];
 		dots[i,jSource] = null;
 		dots[i,jDestination].transform.position = new Vector3((float)i * distanceBetweenDots, (float)jDestination * distanceBetweenDots);
+	}
+
+	private void ReplenishDots() {
+		// Because of the side of the buffer, the "playable" space should always be completely
+		// filled before replenishing dots. Thus, should only need to replenish the "unplayable"
+		// dots above the playable area
+		for (int j = PLAYABLE_HEIGHT; j < TOTAL_HEIGHT; j++) {
+			for (int i = 0; i < WIDTH; i++) {
+				CreateDot(i, j);
+			}
+		}
 	}
 }
