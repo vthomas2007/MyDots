@@ -17,21 +17,35 @@ public class GridManager : MonoBehaviour {
 
 	private List<GameObject> selectedDots = new List<GameObject>();
 
+	private enum GameStates { Ready, DroppingDots };
+	private GameStates gameState;
+
 	// Use this for initialization
 	void Start () {
 		// TODO Move to method
-		for (int i = 0; i < HEIGHT; i++) {
-			for (int j = 0; j < WIDTH; j++) {
+		for (int j = 0; j < HEIGHT; j++) {
+			for (int i = 0; i < WIDTH; i++) {
 				dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
 				dots[i,j].transform.localScale = new Vector2(dotScale, dotScale);
 			}
 		}
+
+		gameState = GameStates.Ready;
 	}
 	
 	void Update () {
-		HandleMouseClick();
-		HandleMouseHold();
-		HandleMouseRelease();
+		if (gameState == GameStates.Ready) {
+			HandleMouseClick();
+			HandleMouseHold();
+			HandleMouseRelease();
+		}
+		else if (gameState == GameStates.DroppingDots) {
+			DropDots();
+			gameState = GameStates.Ready;
+		}
+		else {
+			throw new Exception("Invalid GameState");
+		}
 	}
 
 	public List<GameObject> GetSelectedDots() {
@@ -49,6 +63,7 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButtonDown(0)) {
 			Collider2D clickedDotCollider = GetColliderUnderMouseCursor();
 			if (clickedDotCollider != null) {
+				Debug.Log(GetIndicesOfDot(clickedDotCollider.gameObject));
 				selectedDots.Add(clickedDotCollider.gameObject);
 			}
 		}
@@ -82,6 +97,9 @@ public class GridManager : MonoBehaviour {
 				foreach (GameObject dot in selectedDots) {
 					Destroy(dot);
 				}
+
+				DropDots();
+				gameState = GameStates.DroppingDots;
 			}
 			selectedDots.Clear();
 		}
@@ -96,10 +114,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private Vector2 GetIndicesOfDot(GameObject dot) {
-		for (int i = 0; i < HEIGHT; i++) {
-			for (int j = 0; j < WIDTH; j++) {
+		for (int j = 0; j < HEIGHT; j++) {
+			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == dot) {
-					return new Vector2(i, j);
+					return new Vector2(i,j);
 				}
 			}
 		}
@@ -121,5 +139,15 @@ public class GridManager : MonoBehaviour {
 
 	private bool InSelectedSet(GameObject dot) {
 		return selectedDots.Contains(dot);
+	}
+
+	private void DropDots() {
+		for (int j = 0; j < HEIGHT; j++) {
+			for (int i = 0; i < WIDTH; i++) {
+				if (dots[i,j] == null) {
+					Debug.Log(String.Format("Dropping dot at {0}, {1}", i, j));
+				}
+			}
+		}
 	}
 }
