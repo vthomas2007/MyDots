@@ -85,10 +85,15 @@ public class GridManager : MonoBehaviour {
 				Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
 				Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(GetLastSelectedDot());
 
-				if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot) && !InSelectedSet(dotUnderCursor)) {
-					// TODO: Figure out how if there's a way around checking GetComponent so many times
-					if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
-						selectedDots.Add(dotUnderCursor);
+				if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
+					if (dotUnderCursor == GetSecondToLastSelectedDot()) {
+						selectedDots.RemoveAt(selectedDots.Count - 1);
+					}
+					else if (!InSelectedSet(dotUnderCursor)) {
+						// TODO: Figure out how if there's a way around checking GetComponent so many times
+						if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
+							selectedDots.Add(dotUnderCursor);
+						}
 					}
 				}
 			}
@@ -133,6 +138,14 @@ public class GridManager : MonoBehaviour {
 	private GameObject GetLastSelectedDot() {
 		if (selectedDots.Count > 0) {
 			return selectedDots[selectedDots.Count - 1];
+		}
+
+		return null;
+	}
+
+	private GameObject GetSecondToLastSelectedDot() {
+		if (selectedDots.Count > 1) {
+			return selectedDots[selectedDots.Count - 2];
 		}
 
 		return null;
