@@ -50,7 +50,6 @@ public class LineUpdater : MonoBehaviour {
 
 			points.Add(end);
 
-			//Vector3[] points = new Vector3[] { start, end };
 			Debug.Log(points.Count);
 			lineRenderer.positionCount = points.Count;
 			lineRenderer.SetPositions(points.ToArray());
@@ -58,12 +57,5 @@ public class LineUpdater : MonoBehaviour {
 		else {
 			lineRenderer.enabled = false;
 		}
-		/*
-		Vector3 start = new Vector2(0.0f,0.0f);
-		Vector3 end = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		end.z = 0;
-		Vector3[] points = new Vector3[] { start, end };
-		lineRenderer.SetPositions(points);
-		*/
 	}
 }

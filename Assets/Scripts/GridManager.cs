@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour {
@@ -11,10 +12,6 @@ public class GridManager : MonoBehaviour {
 
 	public float dotScale = 1.0f;
 	public float distanceBetweenDots = 1.0f;
-	private float distanceBetweenDotsSquared;
-
-	// TODO Rename
-	private const float FUDGE_FACTOR = 0.05f;
 
 	public float lineWidth = 0.25f;
 
@@ -22,8 +19,6 @@ public class GridManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		distanceBetweenDotsSquared = distanceBetweenDots * distanceBetweenDots + FUDGE_FACTOR;
-
 		// TODO Move to method
 		for (int i = 0; i < HEIGHT; i++) {
 			for (int j = 0; j < WIDTH; j++) {
@@ -61,10 +56,6 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void HandleMouseHold() {
-		// TODO: Right now this is being handled in the line updater.
-		// Either move that into this class or move all the input handling
-		// into another class and find a clean way to pass information betwee
-		// all classes
 		if (Input.GetMouseButton(0)) {
 			Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
 
@@ -72,9 +63,12 @@ public class GridManager : MonoBehaviour {
 				GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
 
 				if (activeDots.Count > 0) {
-					Vector3 offset = GetLastActiveDot().transform.position - dotUnderCursor.transform.position;
-					if (offset.sqrMagnitude < distanceBetweenDotsSquared && !InActiveSet(dotUnderCursor)) {
-						// TODO: Figure out how to fix this
+					Vector2 indicesUnderCursor = GetIndicesOfDot(dotUnderCursor);
+					Vector2 indicesOfLastActiveDot = GetIndicesOfDot(GetLastActiveDot());
+
+
+					if (IndicesAreAdjacent(indicesUnderCursor, indicesOfLastActiveDot)) {
+						// TODO: Figure out how if there's a way around checking GetComponent so many times
 						if (GetLastActiveDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
 							activeDots.Add(dotUnderCursor);
 						}
@@ -98,6 +92,18 @@ public class GridManager : MonoBehaviour {
 		return hit.collider;
 	}
 
+	private Vector2 GetIndicesOfDot(GameObject dot) {
+		for (int i = 0; i < HEIGHT; i++) {
+			for (int j = 0; j < WIDTH; j++) {
+				if (dots[i,j] == dot) {
+					return new Vector2(i, j);
+				}
+			}
+		}
+
+		throw new Exception("Unable to find dot");
+	}
+
 	private GameObject GetLastActiveDot() {
 		if (activeDots.Count > 0) {
 			return activeDots[activeDots.Count - 1];
@@ -106,7 +112,11 @@ public class GridManager : MonoBehaviour {
 		return null;
 	}
 
-	// TODO: "ACtive" is confusing since Unity already uses the phrase, rename all of this
+	private bool IndicesAreAdjacent(Vector2 v1, Vector2 v2) {
+		return ((int)Mathf.Abs(v1.x - v2.x) + (int)Mathf.Abs(v1.y - v2.y) == 1);
+	}
+
+	// TODO: "Active" is confusing since Unity already uses the phrase, rename all of this
 	private bool InActiveSet(GameObject dot) {
 		return activeDots.Contains(dot);
 	}
