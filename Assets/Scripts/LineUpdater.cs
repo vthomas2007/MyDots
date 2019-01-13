@@ -14,7 +14,7 @@ public class LineUpdater : MonoBehaviour {
 	
 	// TODO TODO TODO: Flip the dependency between the line renderer and the grid
 	// If the grid knows about the line renderer, it can just update/notify it when things change
-	// Alternative: Use events. But may not surface enough information about activedots etc.
+	// Alternative: Use events. But may not surface enough information about selected dots etc.
 	void Start () {
 		lineRenderer = gameObject.AddComponent<LineRenderer>();
 		lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
@@ -29,13 +29,13 @@ public class LineUpdater : MonoBehaviour {
 	}
 	
 	void Update () {
-		List<GameObject> activeDots = gridManager.GetActiveDots();
+		List<GameObject> selectedDots = gridManager.GetSelectedDots();
 
-		if (Input.GetMouseButton(0) && activeDots.Count > 0) {
+		if (Input.GetMouseButton(0) && selectedDots.Count > 0) {
 			lineRenderer.enabled = true;
 
 			// TODO: This obviously can't stick around
-			Color lineColor = activeDots[0].gameObject.GetComponent<SpriteRenderer>().color;
+			Color lineColor = selectedDots[0].gameObject.GetComponent<SpriteRenderer>().color;
 			Gradient gradient = new Gradient();
 			gradient.SetKeys(
 				new GradientColorKey[] { new GradientColorKey(lineColor, 0.0f), new GradientColorKey(lineColor, 1.0f) },
@@ -43,14 +43,13 @@ public class LineUpdater : MonoBehaviour {
 			);
 			lineRenderer.colorGradient = gradient;
 			
-			List<Vector3> points = activeDots.Select((dot) => new Vector3(dot.transform.position.x, dot.transform.position.y, 0.0f)).ToList();
+			List<Vector3> points = selectedDots.Select((dot) => new Vector3(dot.transform.position.x, dot.transform.position.y, 0.0f)).ToList();
 			
 			end = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			end.z = 0;
 
 			points.Add(end);
 
-			Debug.Log(points.Count);
 			lineRenderer.positionCount = points.Count;
 			lineRenderer.SetPositions(points.ToArray());
 		}

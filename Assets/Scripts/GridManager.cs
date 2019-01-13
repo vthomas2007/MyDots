@@ -15,7 +15,7 @@ public class GridManager : MonoBehaviour {
 
 	public float lineWidth = 0.25f;
 
-	private List<GameObject> activeDots = new List<GameObject>();
+	private List<GameObject> selectedDots = new List<GameObject>();
 
 	// Use this for initialization
 	void Start () {
@@ -28,20 +28,19 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 	
-	// Update is called once per frame
 	void Update () {
 		HandleMouseClick();
 		HandleMouseHold();
 		HandleMouseRelease();
 	}
 
-	public List<GameObject> GetActiveDots() {
-		return activeDots;
+	public List<GameObject> GetSelectedDots() {
+		return selectedDots;
 	}
 
 	public GameObject GetCurrentDot() {
-		if (activeDots.Count > 0) {
-			return activeDots[activeDots.Count - 1];
+		if (selectedDots.Count > 0) {
+			return selectedDots[selectedDots.Count - 1];
 		}
 		return null;
 	}
@@ -50,7 +49,7 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButtonDown(0)) {
 			Collider2D clickedDotCollider = GetColliderUnderMouseCursor();
 			if (clickedDotCollider != null) {
-				activeDots.Add(clickedDotCollider.gameObject);
+				selectedDots.Add(clickedDotCollider.gameObject);
 			}
 		}
 	}
@@ -62,15 +61,14 @@ public class GridManager : MonoBehaviour {
 			if (dotUnderCursorCollider != null) {
 				GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
 
-				if (activeDots.Count > 0) {
+				if (selectedDots.Count > 0) {
 					Vector2 indicesUnderCursor = GetIndicesOfDot(dotUnderCursor);
-					Vector2 indicesOfLastActiveDot = GetIndicesOfDot(GetLastActiveDot());
+					Vector2 indicesOfLastSelectedDot = GetIndicesOfDot(GetLastSelectedDot());
 
-
-					if (IndicesAreAdjacent(indicesUnderCursor, indicesOfLastActiveDot)) {
+					if (IndicesAreAdjacent(indicesUnderCursor, indicesOfLastSelectedDot) && !InSelectedSet(dotUnderCursor)) {
 						// TODO: Figure out how if there's a way around checking GetComponent so many times
-						if (GetLastActiveDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
-							activeDots.Add(dotUnderCursor);
+						if (GetLastSelectedDot().GetComponent<SpriteRenderer>().color == dotUnderCursor.GetComponent<SpriteRenderer>().color) {
+							selectedDots.Add(dotUnderCursor);
 						}
 					}
 				}
@@ -80,7 +78,12 @@ public class GridManager : MonoBehaviour {
 
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
-			activeDots.Clear();
+			if (selectedDots.Count > 1) {
+				foreach (GameObject dot in selectedDots) {
+					Destroy(dot);
+				}
+			}
+			selectedDots.Clear();
 		}
 	}
 
@@ -104,9 +107,9 @@ public class GridManager : MonoBehaviour {
 		throw new Exception("Unable to find dot");
 	}
 
-	private GameObject GetLastActiveDot() {
-		if (activeDots.Count > 0) {
-			return activeDots[activeDots.Count - 1];
+	private GameObject GetLastSelectedDot() {
+		if (selectedDots.Count > 0) {
+			return selectedDots[selectedDots.Count - 1];
 		}
 
 		return null;
@@ -116,8 +119,7 @@ public class GridManager : MonoBehaviour {
 		return ((int)Mathf.Abs(v1.x - v2.x) + (int)Mathf.Abs(v1.y - v2.y) == 1);
 	}
 
-	// TODO: "Active" is confusing since Unity already uses the phrase, rename all of this
-	private bool InActiveSet(GameObject dot) {
-		return activeDots.Contains(dot);
+	private bool InSelectedSet(GameObject dot) {
+		return selectedDots.Contains(dot);
 	}
 }
