@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ColorRandomizer : MonoBehaviour {
+public class ColorRandomizer {
 	public SpriteRenderer spriteRenderer;
 
-	static private Color YELLOW = new Color32(230, 219, 33,  255);
-	static private Color GREEN  = new Color32(140, 235, 148, 255);
-	static private Color BLUE   = new Color32(140, 190, 255, 255);
-	static private Color RED    = new Color32(239, 93,  66,  255);
-	static private Color PURPLE = new Color32(156, 93,  181, 255);
+	private static Color YELLOW = new Color32(230, 219, 33,  255);
+	private static Color GREEN  = new Color32(140, 235, 148, 255);
+	private static Color BLUE   = new Color32(140, 190, 255, 255);
+	private static Color RED    = new Color32(239, 93,  66,  255);
+	private static Color PURPLE = new Color32(156, 93,  181, 255);
 
-	static public Color[] colors = { YELLOW, GREEN, BLUE, RED, PURPLE };
+	public static Color[] colors = { YELLOW, GREEN, BLUE, RED, PURPLE };
 	
-	void Start () {
+	public static Color GetRandomColor() {
 		int colorIndex = Random.Range(0, colors.Length);
-		spriteRenderer.color = colors[colorIndex];
+		return colors[colorIndex];
+		//spriteRenderer.color = colors[colorIndex];
 	}
 }

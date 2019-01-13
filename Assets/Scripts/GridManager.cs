@@ -22,6 +22,7 @@ public class GridManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		Debug.Log(Foo.BAR);
 		distanceBetweenDotsSquared = distanceBetweenDots * distanceBetweenDots + FUDGE_FACTOR;
 
 		// TODO Move to method
@@ -106,7 +107,7 @@ public class GridManager : MonoBehaviour {
 		return null;
 	}
 
-	// TODO: "ACtive" is confusing since Unity already uses the phrase, rename all of this
+	// TODO: "Active" is confusing since Unity already uses the phrase, rename all of this
 	private bool InActiveSet(GameObject dot) {
 		return activeDots.Contains(dot);
 	}
