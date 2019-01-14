@@ -14,14 +14,12 @@ public class GridManager : MonoBehaviour {
 	public float dotScale = 1.0f;
 	public float distanceBetweenDots = 1.0f;
 
-	public float lineWidth = 0.25f;
-
 	private List<GameObject> selectedDots = new List<GameObject>();
 
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
-	private bool loopSelected = false;
+	public LineManager lineManager;
 
 	void Start () {
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
@@ -96,7 +94,6 @@ public class GridManager : MonoBehaviour {
 						// TODO: Figure out how if there's a way around checking GetComponent so many times
 						if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
 							selectedDots.Add(dotUnderCursor);
-							loopSelected = IsLoopSelected(); // Should only need this here for visual effects, sfx, etc
 						}
 					}
 				}

@@ -11,10 +11,6 @@ public class Dropper : MonoBehaviour {
 
 	private bool isDropping = false;
 
-	void Start() {
-		
-	}
-	
 	void Update() {
 		if (isDropping) {
 			float t = (Time.time - startTime) / duration;

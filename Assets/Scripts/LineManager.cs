@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class LineUpdater : MonoBehaviour {
-
+public class LineManager : MonoBehaviour {
 	private LineRenderer lineRenderer;
 	public GridManager gridManager;
 
 	private GameObject currentDot;
 	private Vector3 start;
 	private Vector3 end;
+
+	private List<GameObject> lines;
 	
-	// TODO TODO TODO: Flip the dependency between the line renderer and the grid
-	// If the grid knows about the line renderer, it can just update/notify it when things change
-	// Alternative: Use events. But may not surface enough information about selected dots etc.
+	// TODO: Consider using events. But may not surface enough information about selected dots etc.
 	void Start () {
-		lineRenderer = gameObject.AddComponent<LineRenderer>();
-		lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-		lineRenderer.widthMultiplier = 0.25f;
+		lines = new List<GameObject>();
+		//lineRenderer = gameObject.AddComponent<LineRenderer>();
+		//lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+		//lineRenderer.widthMultiplier = 0.25f;
 
 		Gradient gradient = new Gradient();
 		gradient.SetKeys(
