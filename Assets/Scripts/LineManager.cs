@@ -14,21 +14,50 @@ public class LineManager : MonoBehaviour {
 	private List<GameObject> lines;
 	
 	// TODO: Consider using events. But may not surface enough information about selected dots etc.
+	// Also, will need to maintain a list of gameobjects. These should probably just include the "fixed"
+	// endpoints, not the "live" one shooting from the active dot
 	void Start () {
 		lines = new List<GameObject>();
 		//lineRenderer = gameObject.AddComponent<LineRenderer>();
 		//lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
 		//lineRenderer.widthMultiplier = 0.25f;
-
+	}
+	
+	public void AddLine(GameObject dot1, GameObject dot2) {
+		GameObject newLine = new GameObject("Line");
+		LineRenderer lineRenderer = newLine.AddComponent<LineRenderer>();
+		// TODO: Figure out a way to avoid GetComponent if possible
+		Color lineColor = dot1.gameObject.GetComponent<SpriteRenderer>().color;
 		Gradient gradient = new Gradient();
 		gradient.SetKeys(
-			new GradientColorKey[] { new GradientColorKey(Color.red, 0.0f), new GradientColorKey(Color.white, 1.0f) },
+			new GradientColorKey[] { new GradientColorKey(lineColor, 0.0f), new GradientColorKey(lineColor, 1.0f) },
 			new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
 		);
 		lineRenderer.colorGradient = gradient;
+
+		Vector3[] points = new Vector3[2];
+		points[0] = dot1.transform.position;
+		points[1] = dot2.transform.position;
+
+		lineRenderer.SetPositions(points);
+
+		lines.Add(newLine);
 	}
-	
+
+	public void RemoveLastLine() {
+		Destroy(lines[lines.Count - 1]);
+		lines.RemoveAt(lines.Count - 1);
+	}
+
+	public void ClearLines() {
+		foreach (GameObject line in lines) {
+			Destroy(line);
+		}
+		
+		lines.Clear();
+	}
 	void Update () {
+		/*
 		List<GameObject> selectedDots = gridManager.GetSelectedDots();
 
 		if (Input.GetMouseButton(0) && selectedDots.Count > 0) {
@@ -56,5 +85,6 @@ public class LineManager : MonoBehaviour {
 		else {
 			lineRenderer.enabled = false;
 		}
+		*/
 	}
 }
