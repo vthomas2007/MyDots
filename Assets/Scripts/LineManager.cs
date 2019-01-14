@@ -4,8 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 public class LineManager : MonoBehaviour {
-	private LineRenderer lineRenderer;
-	public GridManager gridManager;
+	public GameObject lineRendererPrefab;
 
 	private GameObject currentDot;
 	private Vector3 start;
@@ -24,16 +23,21 @@ public class LineManager : MonoBehaviour {
 	}
 	
 	public void AddLine(GameObject dot1, GameObject dot2) {
-		GameObject newLine = new GameObject("Line");
-		LineRenderer lineRenderer = newLine.AddComponent<LineRenderer>();
+		GameObject newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 		// TODO: Figure out a way to avoid GetComponent if possible
+		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
+		lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+		lineRenderer.widthMultiplier = 0.25f;
+
 		Color lineColor = dot1.gameObject.GetComponent<SpriteRenderer>().color;
-		Gradient gradient = new Gradient();
+		/*Gradient gradient = new Gradient();
 		gradient.SetKeys(
 			new GradientColorKey[] { new GradientColorKey(lineColor, 0.0f), new GradientColorKey(lineColor, 1.0f) },
 			new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
-		);
-		lineRenderer.colorGradient = gradient;
+		);*/
+		lineRenderer.startColor = lineColor;
+		lineRenderer.endColor = lineColor;
+		//lineRenderer.colorGradient = gradient;
 
 		Vector3[] points = new Vector3[2];
 		points[0] = dot1.transform.position;

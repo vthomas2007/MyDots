@@ -4,12 +4,13 @@ using System;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour {
-	private static int WIDTH = 6;
+	public GameObject dotPrefab;
+	public LineManager lineManager;private static int WIDTH = 6;
+	public LineRenderer lineToCursor;
+
 	private static int PLAYABLE_HEIGHT = 6;
 	private static int TOTAL_HEIGHT = PLAYABLE_HEIGHT * 2;
 	private GameObject[,] dots = new GameObject[WIDTH, TOTAL_HEIGHT];
-
-	public GameObject dotPrefab;
 
 	public float dotScale = 1.0f;
 	public float distanceBetweenDots = 1.0f;
@@ -19,14 +20,19 @@ public class GridManager : MonoBehaviour {
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
-	public LineManager lineManager;
-
 	void Start () {
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				CreateDot(i, j);
 			}
 		}
+
+		// TODO: Move to variable, share with lineManager
+		// OR just consider moving all of this to linemanager
+		lineToCursor.widthMultiplier = 0.25f;
+		lineToCursor.enabled = false;
+		// TODO: Figure out if I need to remove these materials after removing lines
+		lineToCursor.material = new Material(Shader.Find("Sprites/Default"));
 
 		gameState = GameStates.Ready;
 	}
@@ -71,34 +77,72 @@ public class GridManager : MonoBehaviour {
 			Collider2D clickedDotCollider = GetColliderUnderMouseCursor();
 			if (clickedDotCollider != null) {
 				selectedDots.Add(clickedDotCollider.gameObject);
+
+				// TODO Again, this can probably all go to the line manager
+				UpdateLineColor(clickedDotCollider.gameObject.GetComponent<SpriteRenderer>().color);
+				lineToCursor.enabled = true;
 			}
 		}
 	}
 
+	private void UpdateLineColor(Color c) {
+		// TODO: Only need to create the alphakey array once, can share between linemanager
+		// This whole thing can be more efficient, don't need to keep instantiating Vector3s
+		// for endpoint either, or the array of coords.
+
+		/* Gradient gradient = new Gradient();
+		gradient.SetKeys(
+			new GradientColorKey[] { new GradientColorKey(c, 0.0f), new GradientColorKey(c, 1.0f) },
+			new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
+		);
+		lineToCursor.colorGradient = gradient;
+		*/
+		lineToCursor.startColor = c;
+		lineToCursor.endColor = c;
+	}
+
 	private void HandleMouseHold() {
+		// TODO Look into breaking up this conditional, getting pretty unwieldy
 		if (Input.GetMouseButton(0)) {
-			Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
+			GameObject lastSelectedDot = GetLastSelectedDot();
+			
+			if (lastSelectedDot != null) {
+				DrawLineToCursorFromDot(lastSelectedDot);
 
-			if (dotUnderCursorCollider != null && selectedDots.Count > 0) {
-				GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
+				Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
+				if (dotUnderCursorCollider != null) {
+					
+					GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
 
-				Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
-				Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(GetLastSelectedDot());
+					Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
+					Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(lastSelectedDot);
 
-				// TODO Look into breaking up this conditional, getting pretty unwieldy
-				if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
-					if (dotUnderCursor == GetSecondToLastSelectedDot()) {
-						selectedDots.RemoveAt(selectedDots.Count - 1);
-					}
-					else {
-						// TODO: Figure out how if there's a way around checking GetComponent so many times
-						if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
-							selectedDots.Add(dotUnderCursor);
+					if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
+						if (dotUnderCursor == GetSecondToLastSelectedDot()) {
+							selectedDots.RemoveAt(selectedDots.Count - 1);
+							lineManager.RemoveLastLine();
+						}
+						else {
+							if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
+								lineManager.AddLine(lastSelectedDot, dotUnderCursor);
+								selectedDots.Add(dotUnderCursor);
+							}
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private void DrawLineToCursorFromDot(GameObject dot) {
+		Vector3 cursorCoords = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		cursorCoords.z = 0;
+
+		Vector3[] points = new Vector3[2];
+		points[0] = dot.transform.position;
+		points[1] = cursorCoords;
+
+		lineToCursor.SetPositions(points);
 	}
 
 	private void HandleMouseRelease() {
@@ -118,7 +162,13 @@ public class GridManager : MonoBehaviour {
 			}
 
 			selectedDots.Clear();
+			lineManager.ClearLines();
+			HideLineToCursor();
 		}
+	}
+
+	private void HideLineToCursor() {
+		lineToCursor.enabled = false;
 	}
 
 	private Collider2D GetColliderUnderMouseCursor() {
