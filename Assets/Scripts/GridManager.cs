@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
-	public LineManager lineManager;private static int WIDTH = 6;
-	public LineRenderer lineToCursor;
+	public LineManager lineManager;
 
+	private static int WIDTH = 6;
 	private static int PLAYABLE_HEIGHT = 6;
 	private static int TOTAL_HEIGHT = PLAYABLE_HEIGHT * 2;
 	private GameObject[,] dots = new GameObject[WIDTH, TOTAL_HEIGHT];
@@ -26,13 +26,6 @@ public class GridManager : MonoBehaviour {
 				CreateDot(i, j);
 			}
 		}
-
-		// TODO: Move to variable, share with lineManager
-		// OR just consider moving all of this to linemanager
-		lineToCursor.widthMultiplier = 0.25f;
-		lineToCursor.enabled = false;
-		// TODO: Figure out if I need to remove these materials after removing lines
-		lineToCursor.material = new Material(Shader.Find("Sprites/Default"));
 
 		gameState = GameStates.Ready;
 	}
@@ -78,27 +71,10 @@ public class GridManager : MonoBehaviour {
 			if (clickedDotCollider != null) {
 				selectedDots.Add(clickedDotCollider.gameObject);
 
-				// TODO Again, this can probably all go to the line manager
-				UpdateLineColor(clickedDotCollider.gameObject.GetComponent<SpriteRenderer>().color);
-				lineToCursor.enabled = true;
+				lineManager.UpdateLineToCursorColor(clickedDotCollider.gameObject.GetComponent<SpriteRenderer>().color);
+				lineManager.SetLineToCursorEnabled(true);
 			}
 		}
-	}
-
-	private void UpdateLineColor(Color c) {
-		// TODO: Only need to create the alphakey array once, can share between linemanager
-		// This whole thing can be more efficient, don't need to keep instantiating Vector3s
-		// for endpoint either, or the array of coords.
-
-		/* Gradient gradient = new Gradient();
-		gradient.SetKeys(
-			new GradientColorKey[] { new GradientColorKey(c, 0.0f), new GradientColorKey(c, 1.0f) },
-			new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 1.0f) }
-		);
-		lineToCursor.colorGradient = gradient;
-		*/
-		lineToCursor.startColor = c;
-		lineToCursor.endColor = c;
 	}
 
 	private void HandleMouseHold() {
@@ -107,7 +83,7 @@ public class GridManager : MonoBehaviour {
 			GameObject lastSelectedDot = GetLastSelectedDot();
 			
 			if (lastSelectedDot != null) {
-				DrawLineToCursorFromDot(lastSelectedDot);
+				lineManager.DrawLineToCursorFromDot(lastSelectedDot);
 
 				Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
 				if (dotUnderCursorCollider != null) {
@@ -134,17 +110,6 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	private void DrawLineToCursorFromDot(GameObject dot) {
-		Vector3 cursorCoords = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		cursorCoords.z = 0;
-
-		Vector3[] points = new Vector3[2];
-		points[0] = dot.transform.position;
-		points[1] = cursorCoords;
-
-		lineToCursor.SetPositions(points);
-	}
-
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDots.Count > 1) {
@@ -162,13 +127,8 @@ public class GridManager : MonoBehaviour {
 			}
 
 			selectedDots.Clear();
-			lineManager.ClearLines();
-			HideLineToCursor();
+			lineManager.RemoveAllLines();
 		}
-	}
-
-	private void HideLineToCursor() {
-		lineToCursor.enabled = false;
 	}
 
 	private Collider2D GetColliderUnderMouseCursor() {
