@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 212271729039038148}
-  easyMode: 0
+  easyMode: 1
 --- !u!212 &212271729039038148
 SpriteRenderer:
   m_ObjectHideFlags: 1

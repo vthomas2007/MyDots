@@ -10,13 +10,15 @@ public class LineManager : MonoBehaviour {
 	private Vector3 start;
 	private Vector3 end;
 
+	private GameObject lineToCursor;
 	private List<GameObject> lines;
+	private Material lineMaterial;
 	
 	// TODO: Consider using events. But may not surface enough information about selected dots etc.
-	// Also, will need to maintain a list of gameobjects. These should probably just include the "fixed"
-	// endpoints, not the "live" one shooting from the active dot
 	void Start () {
 		lines = new List<GameObject>();
+		lineMaterial = new Material(Shader.Find("Sprites/Default"));
+
 		//lineRenderer = gameObject.AddComponent<LineRenderer>();
 		//lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
 		//lineRenderer.widthMultiplier = 0.25f;
@@ -26,7 +28,7 @@ public class LineManager : MonoBehaviour {
 		GameObject newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 		// TODO: Figure out a way to avoid GetComponent if possible
 		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
-		lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+		lineRenderer.material = lineMaterial;
 		lineRenderer.widthMultiplier = 0.25f;
 
 		Color lineColor = dot1.gameObject.GetComponent<SpriteRenderer>().color;
