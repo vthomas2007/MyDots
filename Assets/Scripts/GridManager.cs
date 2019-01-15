@@ -47,6 +47,7 @@ public class GridManager : MonoBehaviour {
 		}
 		else if (gameState == GameStates.DroppingDots) {
 			DropDots();
+			ReplenishDots();
 			gameState = GameStates.Ready;
 		}
 		else {
@@ -64,6 +65,7 @@ public class GridManager : MonoBehaviour {
 		}
 		return null;
 	}
+	
 	// TODO: See if this can easily be moved to another class or component
 	private void HandleMouseClick() {
 		if (Input.GetMouseButtonDown(0)) {
@@ -95,8 +97,7 @@ public class GridManager : MonoBehaviour {
 
 					if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
 						if (dotUnderCursor == GetSecondToLastSelectedDot()) {
-							selectedDots.RemoveAt(selectedDots.Count - 1);
-							lineManager.RemoveLastLine();
+							RemoveLastLine();
 						}
 						else {
 							if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
@@ -109,6 +110,11 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 	}
+	
+	private void RemoveLastLine() {
+		selectedDots.RemoveAt(selectedDots.Count - 1);
+		lineManager.RemoveLastLine();
+	}
 
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
@@ -119,9 +125,6 @@ public class GridManager : MonoBehaviour {
 				else {
 					RemoveSelectedDots();
 				}
-
-				DropDots();
-				ReplenishDots();
 
 				gameState = GameStates.DroppingDots;
 			}
@@ -249,7 +252,9 @@ public class GridManager : MonoBehaviour {
 		// dots above the playable area
 		for (int j = PLAYABLE_HEIGHT; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
-				CreateDot(i, j);
+				if (dots[i,j] == null) {
+					CreateDot(i, j);
+				}
 			}
 		}
 	}
