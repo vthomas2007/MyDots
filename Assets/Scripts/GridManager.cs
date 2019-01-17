@@ -6,6 +6,7 @@ using UnityEngine;
 public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
 	public LineManager lineManager;
+	public CurrentColor currentColorStore;
 
 	public float dotScaleFactor = .5f;
 	private Vector2 dotScale;
@@ -76,9 +77,11 @@ public class GridManager : MonoBehaviour {
 			GameObject clickedDot = GetDotUnderMouseCursor();
 
 			if (clickedDot != null) {
+				// TODO: Look into caching the color of the dots somewhere outside of a component
+				currentColorStore.currentColor = clickedDot.GetComponent<SpriteRenderer>().color;
+
 				if (selectedDotIndices.Count == 0) {
 					lineManager.EnableLineToCursor();
-					lineManager.UpdateLineToCursorColor(clickedDot.GetComponent<SpriteRenderer>().color);
 				}
 
 				selectedDotIndices.Add(GetArrayCoordinatesOfDot(clickedDot));
@@ -113,7 +116,7 @@ public class GridManager : MonoBehaviour {
 							Backtrack();
 						}
 						else {
-							if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
+							if (currentColorStore.currentColor == GetDotColor(dotUnderCursor)) {
 								lineManager.AddLine(lastSelectedDot, dotUnderCursor);
 								selectedDotIndices.Add(arrayCoordinatesUnderCursor);
 							}
@@ -142,7 +145,7 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDotIndices.Count > 1) {
 				if (IsLoopSelected()) {
-					RemoveAllDotsOfColor(GetSelectedDotColor());
+					RemoveAllDotsOfColor(currentColorStore.currentColor);
 				}
 				else {
 					RemoveSelectedDots();
@@ -224,13 +227,6 @@ public class GridManager : MonoBehaviour {
 	// TODO: Move this elsewhere in the file
 	private GameObject DotAtCoords(Vector2Int coords) {
 		return dots[coords.x, coords.y];
-	}
-
-	private Color GetSelectedDotColor() {
-		// TODO: Revisit how to do this. Does it make sense to set/unset this on click/release?
-		// Does it make sense to have this BOTH here and the line manager (no).
-		Vector2Int coords = selectedDotIndices[0];
-		return GetDotColor(DotAtCoords(coords));
 	}
 
 	private Color GetDotColor(GameObject dot) {

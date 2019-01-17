@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class LineManager : MonoBehaviour {
 	public GameObject lineRendererPrefab;
-	public float lineWidth = 0.25f;
+	public CurrentColor currentColorStore;
 
-	private Color currentlySelectedColor;
+	public float lineWidth = 0.25f;
 
 	private GameObject lineToCursorGameObject;
 	private LineRenderer lineToCursor;
@@ -18,8 +18,7 @@ public class LineManager : MonoBehaviour {
 
 	private Queue<GameObject> linePool = new Queue<GameObject>();
 	
-	// TODO: Consider using events. But may not surface enough information about selected dots etc.
-	void Start () {
+	void Start() {
 		lines = new List<GameObject>();
 		lineMaterial = new Material(Shader.Find("Sprites/Default"));
 
@@ -46,8 +45,8 @@ public class LineManager : MonoBehaviour {
 		lineRenderer.material = lineMaterial;
 		lineRenderer.widthMultiplier = lineWidth;
 
-		lineRenderer.startColor = currentlySelectedColor;
-		lineRenderer.endColor = currentlySelectedColor;
+		lineRenderer.startColor = currentColorStore.currentColor;
+		lineRenderer.endColor = currentColorStore.currentColor;
 
 		Vector3[] points = new Vector3[2];
 		points[0] = sourceDot.transform.position;
@@ -85,15 +84,14 @@ public class LineManager : MonoBehaviour {
 		DisableLineToCursor();
 	}
 
-	public void UpdateLineToCursorColor(Color c) {
-		currentlySelectedColor = c;
-
-		lineToCursor.startColor = currentlySelectedColor;
-		lineToCursor.endColor = currentlySelectedColor;
+	public void EnableLineToCursor() {
+		UpdateLineToCursorColor(currentColorStore.currentColor);
+		SetLineToCursorEnabled(true);
 	}
 
-	public void EnableLineToCursor() {
-		SetLineToCursorEnabled(true);
+	private void UpdateLineToCursorColor(Color c) {
+		lineToCursor.startColor = c;
+		lineToCursor.endColor = c;
 	}
 
 	public void DisableLineToCursor() {

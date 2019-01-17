@@ -216,6 +216,7 @@ GameObject:
   - component: {fileID: 1016040470}
   - component: {fileID: 1016040469}
   - component: {fileID: 1016040471}
+  - component: {fileID: 1016040472}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -236,6 +237,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
   lineManager: {fileID: 1016040471}
+  currentColorStore: {fileID: 1016040472}
+  cameraInstance: {fileID: 0}
   dotScaleFactor: 0.5
   distanceBetweenDots: 1.43
 --- !u!4 &1016040470
@@ -264,4 +267,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lineRendererPrefab: {fileID: 1577103659704402, guid: 171cace81cbd4974994e98ac55479c7d,
     type: 2}
+  currentColorStore: {fileID: 1016040472}
   lineWidth: 0.25
+--- !u!114 &1016040472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1016040468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c54d2630360afe4a835dcac5fe76a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
