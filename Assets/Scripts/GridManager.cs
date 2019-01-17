@@ -37,11 +37,9 @@ public class GridManager : MonoBehaviour {
 
 	private void CreateDot(int i, int j) {
 		if (dotPool.Count > 0) {
-			Debug.Log("Dequeuing");
 			dots[i,j] = dotPool.Dequeue();
 		}
 		else {
-			Debug.Log("Instantiating");
 			dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
 		}
 		
@@ -199,7 +197,6 @@ public class GridManager : MonoBehaviour {
 	private void RemoveSelectedDots() {
 		foreach (Vector2Int coords in selectedDotIndices) {
 			RemoveDotAtCoords(coords);
-			//Destroy(dots[coords.x, coords.y]);
 		}
 	}
 
@@ -208,7 +205,6 @@ public class GridManager : MonoBehaviour {
 			for (int i = 0; i < WIDTH; i++) {
 				if (GetDotColor(dots[i,j]) == c) {
 					RemoveDotAtCoords(i,j);
-					//Destroy(dots[i,j]);
 				}
 			}
 		}
@@ -222,7 +218,6 @@ public class GridManager : MonoBehaviour {
 		GameObject dot = DotAtCoords(coords);
 		dot.SetActive(false);
 		dotPool.Enqueue(dot);
-		Debug.Log("Enqueueing");
 		dots[coords.x, coords.y] = null;
 	}
 

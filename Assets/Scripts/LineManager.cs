@@ -15,6 +15,8 @@ public class LineManager : MonoBehaviour {
 
 	private List<GameObject> lines;
 	private Material lineMaterial;
+
+	private Queue<GameObject> linePool = new Queue<GameObject>();
 	
 	// TODO: Consider using events. But may not surface enough information about selected dots etc.
 	void Start () {
@@ -30,7 +32,15 @@ public class LineManager : MonoBehaviour {
 	}
 	
 	public void AddLine(GameObject sourceDot, GameObject destinationDot) {
-		GameObject newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
+		GameObject newLine;
+		if (linePool.Count > 0) {
+			newLine = linePool.Dequeue();
+			newLine.SetActive(true);
+		}
+		else {
+			newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
+		}
+
 		// TODO: Figure out a way to avoid GetComponent if possible
 		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
 		lineRenderer.material = lineMaterial;
@@ -61,16 +71,17 @@ public class LineManager : MonoBehaviour {
 	}
 
 	public void RemoveLastLine() {
-		Destroy(lines[lines.Count - 1]);
+		GameObject lineToRemove = lines[lines.Count - 1];
+		lineToRemove.SetActive(false);
+		linePool.Enqueue(lineToRemove);
 		lines.RemoveAt(lines.Count - 1);
 	}
 
 	public void RemoveAllLines() {
-		foreach (GameObject line in lines) {
-			Destroy(line);
+		while (lines.Count > 0) {
+			RemoveLastLine();
 		}
 		
-		lines.Clear();
 		DisableLineToCursor();
 	}
 
