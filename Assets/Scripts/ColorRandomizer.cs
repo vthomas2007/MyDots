@@ -18,7 +18,7 @@ public class ColorRandomizer : MonoBehaviour {
 	// TODO: Determine where this should live, putting it on the dot prevents
 	// the manager from having any say over the assigned color, how many colors
 	// to choose from, etc
-	void Start () {
+	void OnEnable() {
 		int colorIndex = Random.Range(0, colors.Length);
 		spriteRenderer.color = colors[colorIndex];
 	}

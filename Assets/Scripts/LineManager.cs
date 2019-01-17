@@ -7,9 +7,7 @@ public class LineManager : MonoBehaviour {
 	public GameObject lineRendererPrefab;
 	public float lineWidth = 0.25f;
 
-	private GameObject currentDot;
-	private Vector3 start;
-	private Vector3 end;
+	private Color currentlySelectedColor;
 
 	private GameObject lineToCursorGameObject;
 	private LineRenderer lineToCursor;
@@ -31,20 +29,19 @@ public class LineManager : MonoBehaviour {
 		lineToCursor.enabled = false;
 	}
 	
-	public void AddLine(GameObject dot1, GameObject dot2) {
+	public void AddLine(GameObject sourceDot, GameObject destinationDot) {
 		GameObject newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 		// TODO: Figure out a way to avoid GetComponent if possible
 		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
 		lineRenderer.material = lineMaterial;
 		lineRenderer.widthMultiplier = lineWidth;
 
-		Color lineColor = dot1.gameObject.GetComponent<SpriteRenderer>().color;
-		lineRenderer.startColor = lineColor;
-		lineRenderer.endColor = lineColor;
+		lineRenderer.startColor = currentlySelectedColor;
+		lineRenderer.endColor = currentlySelectedColor;
 
 		Vector3[] points = new Vector3[2];
-		points[0] = dot1.transform.position;
-		points[1] = dot2.transform.position;
+		points[0] = sourceDot.transform.position;
+		points[1] = destinationDot.transform.position;
 
 		lineRenderer.SetPositions(points);
 
@@ -74,15 +71,25 @@ public class LineManager : MonoBehaviour {
 		}
 		
 		lines.Clear();
-		SetLineToCursorEnabled(false);
+		DisableLineToCursor();
 	}
 
 	public void UpdateLineToCursorColor(Color c) {
-		lineToCursor.startColor = c;
-		lineToCursor.endColor = c;
+		currentlySelectedColor = c;
+
+		lineToCursor.startColor = currentlySelectedColor;
+		lineToCursor.endColor = currentlySelectedColor;
 	}
 
-	public void SetLineToCursorEnabled(bool enabled) {
+	public void EnableLineToCursor() {
+		SetLineToCursorEnabled(true);
+	}
+
+	public void DisableLineToCursor() {
+		SetLineToCursorEnabled(false);
+	}
+
+	private void SetLineToCursorEnabled(bool enabled) {
 		lineToCursor.enabled = enabled;
 	}
 }

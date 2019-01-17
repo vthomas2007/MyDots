@@ -236,7 +236,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
   lineManager: {fileID: 1016040471}
-  dotScale: 0.52
+  dotScaleFactor: 0.5
   distanceBetweenDots: 1.43
 --- !u!4 &1016040470
 Transform:

@@ -7,20 +7,25 @@ public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
 	public LineManager lineManager;
 
+	public float dotScaleFactor = .5f;
+	private Vector2 dotScale;
+
+	public float distanceBetweenDots = 1.0f;
+
 	private static int WIDTH = 6;
 	private static int PLAYABLE_HEIGHT = 6;
 	private static int TOTAL_HEIGHT = PLAYABLE_HEIGHT * 2;
 	private GameObject[,] dots = new GameObject[WIDTH, TOTAL_HEIGHT];
 
-	public float dotScale = 1.0f;
-	public float distanceBetweenDots = 1.0f;
-
-	private List<GameObject> selectedDots = new List<GameObject>();
+	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
+	private Queue<GameObject> dotPool = new Queue<GameObject>();
 
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
 	void Start () {
+		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
+		
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				CreateDot(i, j);
@@ -31,8 +36,16 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void CreateDot(int i, int j) {
-		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
-		dots[i,j].transform.localScale = new Vector2(dotScale, dotScale);
+		if (dotPool.Count > 0) {
+			Debug.Log("Dequeuing");
+			dots[i,j] = dotPool.Dequeue();
+		}
+		else {
+			Debug.Log("Instantiating");
+			dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
+		}
+		
+		dots[i,j].transform.localScale = dotScale;
 
 		if (j >= PLAYABLE_HEIGHT) {
 			dots[i,j].SetActive(false);
@@ -46,6 +59,10 @@ public class GridManager : MonoBehaviour {
 			HandleMouseRelease();
 		}
 		else if (gameState == GameStates.DroppingDots) {
+			// Note that this doesn't wait for the dots to finish dropping before
+			// returning the GameState to ready. This won't be a problem as long
+			// as players aren't inhumanly fast or the drop speed isn't turned down
+			// to something extremely low
 			DropDots();
 			ReplenishDots();
 			gameState = GameStates.Ready;
@@ -55,17 +72,28 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	// TODO: See if this can easily be moved to another class or component
+	// TODO: See if these can easily be moved to an InputHandler class or component
 	private void HandleMouseClick() {
 		if (Input.GetMouseButtonDown(0)) {
-			Collider2D clickedDotCollider = GetColliderUnderMouseCursor();
-			if (clickedDotCollider != null) {
-				selectedDots.Add(clickedDotCollider.gameObject);
+			GameObject clickedDot = GetDotUnderMouseCursor();
 
-				lineManager.UpdateLineToCursorColor(clickedDotCollider.gameObject.GetComponent<SpriteRenderer>().color);
-				lineManager.SetLineToCursorEnabled(true);
+			if (clickedDot != null) {
+				if (selectedDotIndices.Count == 0) {
+					lineManager.EnableLineToCursor();
+					lineManager.UpdateLineToCursorColor(clickedDot.GetComponent<SpriteRenderer>().color);
+				}
+
+				selectedDotIndices.Add(GetArrayCoordinatesOfDot(clickedDot));
 			}
 		}
+	}
+
+	private GameObject GetDotUnderMouseCursor() {
+		Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+		RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
+
+		return (hit.collider == null) ? null : hit.collider.gameObject;
 	}
 
 	private void HandleMouseHold() {
@@ -76,22 +104,20 @@ public class GridManager : MonoBehaviour {
 			if (lastSelectedDot != null) {
 				lineManager.DrawLineToCursorFromDot(lastSelectedDot);
 
-				Collider2D dotUnderCursorCollider = GetColliderUnderMouseCursor();
-				if (dotUnderCursorCollider != null) {
+				GameObject dotUnderCursor = GetDotUnderMouseCursor();
+				if (dotUnderCursor != null) {
 					
-					GameObject dotUnderCursor = dotUnderCursorCollider.gameObject;
+					Vector2Int arrayCoordinatesUnderCursor = GetArrayCoordinatesOfDot(dotUnderCursor);
+					Vector2Int arrayCoordinatesOfLastSelectedDot = GetArrayCoordinatesOfDot(lastSelectedDot);
 
-					Vector2 coordinatesUnderCursor = GetCoordinatesOfDot(dotUnderCursor);
-					Vector2 coordinatesOfLastSelectedDot = GetCoordinatesOfDot(lastSelectedDot);
-
-					if (CoordinatesAreAdjacent(coordinatesUnderCursor, coordinatesOfLastSelectedDot)) {
+					if (CoordinatesAreAdjacent(arrayCoordinatesUnderCursor, arrayCoordinatesOfLastSelectedDot)) {
 						if (dotUnderCursor == GetSecondToLastSelectedDot()) {
-							RemoveLastLine();
+							Backtrack();
 						}
 						else {
 							if (GetSelectedDotColor() == GetDotColor(dotUnderCursor)) {
 								lineManager.AddLine(lastSelectedDot, dotUnderCursor);
-								selectedDots.Add(dotUnderCursor);
+								selectedDotIndices.Add(arrayCoordinatesUnderCursor);
 							}
 						}
 					}
@@ -99,15 +125,24 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 	}
+
+	private GameObject GetLastSelectedDot() {
+		if (selectedDotIndices.Count > 0) {
+			Vector2Int indices = selectedDotIndices[selectedDotIndices.Count - 1];
+			return dots[indices.x, indices.y];
+		}
+
+		return null;
+	}
 	
-	private void RemoveLastLine() {
-		selectedDots.RemoveAt(selectedDots.Count - 1);
+	private void Backtrack() {
+		selectedDotIndices.RemoveAt(selectedDotIndices.Count - 1);
 		lineManager.RemoveLastLine();
 	}
 
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
-			if (selectedDots.Count > 1) {
+			if (selectedDotIndices.Count > 1) {
 				if (IsLoopSelected()) {
 					RemoveAllDotsOfColor(GetSelectedDotColor());
 				}
@@ -118,24 +153,16 @@ public class GridManager : MonoBehaviour {
 				gameState = GameStates.DroppingDots;
 			}
 
-			selectedDots.Clear();
+			selectedDotIndices.Clear();
 			lineManager.RemoveAllLines();
 		}
 	}
 
-	private Collider2D GetColliderUnderMouseCursor() {
-		Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
-		RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
-
-		return hit.collider;
-	}
-
-	private Vector2 GetCoordinatesOfDot(GameObject dot) {
+	private Vector2Int GetArrayCoordinatesOfDot(GameObject dot) {
 		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == dot) {
-					return new Vector2(i,j);
+					return new Vector2Int(i,j);
 				}
 			}
 		}
@@ -143,42 +170,36 @@ public class GridManager : MonoBehaviour {
 		throw new Exception("Unable to find dot");
 	}
 
-	private GameObject GetLastSelectedDot() {
-		if (selectedDots.Count > 0) {
-			return selectedDots[selectedDots.Count - 1];
-		}
-
-		return null;
-	}
-
 	private GameObject GetSecondToLastSelectedDot() {
-		if (selectedDots.Count > 1) {
-			return selectedDots[selectedDots.Count - 2];
+		if (selectedDotIndices.Count > 1) {
+			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
+			return dots[coords.x, coords.y];
 		}
 
 		return null;
 	}
 
 	private bool CoordinatesAreAdjacent(Vector2 v1, Vector2 v2) {
-		return ((int)Mathf.Abs(v1.x - v2.x) + (int)Mathf.Abs(v1.y - v2.y) == 1);
+		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
 	}
 
 	private bool IsLoopSelected() {
-		HashSet<GameObject> uniqueSelectedDots = new HashSet<GameObject>();
+		HashSet<Vector2Int> uniqueSelectedDots = new HashSet<Vector2Int>();
 
-		foreach (GameObject dot in selectedDots) {
-			if (uniqueSelectedDots.Contains(dot)) {
+		foreach (Vector2Int indices in selectedDotIndices) {
+			if (uniqueSelectedDots.Contains(indices)) {
 				return true;
 			}
-			uniqueSelectedDots.Add(dot);
+			uniqueSelectedDots.Add(indices);
 		}
 
 		return false;
 	}
 
 	private void RemoveSelectedDots() {
-		foreach (GameObject dot in selectedDots) {
-			Destroy(dot);
+		foreach (Vector2Int coords in selectedDotIndices) {
+			RemoveDotAtCoords(coords);
+			//Destroy(dots[coords.x, coords.y]);
 		}
 	}
 
@@ -186,14 +207,35 @@ public class GridManager : MonoBehaviour {
 		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (GetDotColor(dots[i,j]) == c) {
-					Destroy(dots[i,j]);
+					RemoveDotAtCoords(i,j);
+					//Destroy(dots[i,j]);
 				}
 			}
 		}
 	}
 
+	private void RemoveDotAtCoords(int x, int y) {
+		RemoveDotAtCoords(new Vector2Int(x, y));
+	}
+	
+	private void RemoveDotAtCoords(Vector2Int coords) {
+		GameObject dot = DotAtCoords(coords);
+		dot.SetActive(false);
+		dotPool.Enqueue(dot);
+		Debug.Log("Enqueueing");
+		dots[coords.x, coords.y] = null;
+	}
+
+	// TODO: Move this elsewhere in the file
+	private GameObject DotAtCoords(Vector2Int coords) {
+		return dots[coords.x, coords.y];
+	}
+
 	private Color GetSelectedDotColor() {
-		return GetDotColor(selectedDots[0]);
+		// TODO: Revisit how to do this. Does it make sense to set/unset this on click/release?
+		// Does it make sense to have this BOTH here and the line manager (no).
+		Vector2Int coords = selectedDotIndices[0];
+		return GetDotColor(DotAtCoords(coords));
 	}
 
 	private Color GetDotColor(GameObject dot) {
@@ -206,33 +248,37 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
-			for (int i = 0; i < WIDTH; i++) {
-				if (dots[i,j] == null) {
-					DropDot(i,j);
+		for (int y = 0; y < PLAYABLE_HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				if (dots[x,y] == null) {
+					DropDot(x,y);
 				}
 			}
 		}
 	}
 
-	private void DropDot(int i, int jDestination) {
-		int jSource = jDestination;
-		while (dots[i,jSource] == null && jSource < TOTAL_HEIGHT - 1) {
-			jSource++;
+	private void DropDot(int x, int yDestination) {
+		int ySource = yDestination;
+		while (dots[x,ySource] == null && ySource < TOTAL_HEIGHT - 1) {
+			ySource++;
 		}
-		if (dots[i,jSource] != null) {
-			MoveDot(i, jDestination, jSource);
+
+		if (dots[x,ySource] != null) {
+			MoveDot(x, yDestination, ySource);
+		}
+		else {
+			throw new Exception("Unable to drop dot");
 		}
 	}
 
-	private void MoveDot(int i, int jDestination, int jSource) {
-		dots[i,jSource].SetActive(true);
-		dots[i,jDestination] = dots[i,jSource];
-		dots[i,jSource] = null;
+	private void MoveDot(int x, int yDestination, int ySource) {
+		dots[x,ySource].SetActive(true);
+		dots[x,yDestination] = dots[x,ySource];
+		dots[x,ySource] = null;
 
-		Vector3 startPosition = new Vector3((float)i * distanceBetweenDots, (float)jSource * distanceBetweenDots);
-		Vector3 stopPosition = new Vector3((float)i * distanceBetweenDots, (float)jDestination * distanceBetweenDots);
-		dots[i,jDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
+		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, (float)ySource * distanceBetweenDots);
+		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
+		dots[x,yDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
 	}
 
 	private void ReplenishDots() {
