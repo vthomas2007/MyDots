@@ -55,17 +55,6 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	public List<GameObject> GetSelectedDots() {
-		return selectedDots;
-	}
-
-	public GameObject GetCurrentDot() {
-		if (selectedDots.Count > 0) {
-			return selectedDots[selectedDots.Count - 1];
-		}
-		return null;
-	}
-	
 	// TODO: See if this can easily be moved to another class or component
 	private void HandleMouseClick() {
 		if (Input.GetMouseButtonDown(0)) {
