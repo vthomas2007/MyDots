@@ -123,7 +123,6 @@ public class GridManager : MonoBehaviour {
 	private GameObject GetDotUnderMouseCursor() {
 		Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
-		Debug.Log(mousePosition2D.ToString());
 		RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
 
 		return (hit.collider == null) ? null : hit.collider.gameObject;
