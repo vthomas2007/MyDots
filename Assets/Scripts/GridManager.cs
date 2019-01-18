@@ -20,7 +20,6 @@ public class GridManager : MonoBehaviour {
 
 	private GameObject[,] dots;
 	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
-	private Queue<GameObject> dotPool = new Queue<GameObject>();
 
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
@@ -32,7 +31,7 @@ public class GridManager : MonoBehaviour {
 		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
 		
-		for (int j = 0; j < TOTAL_HEIGHT; j++) {
+		for (int j = 0; j < HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				CreateDot(i, j);
 				// TODO: Restructure this
@@ -71,13 +70,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void CreateDot(int i, int j) {
-		if (dotPool.Count > 0) {
-			dots[i,j] = dotPool.Dequeue();
-		}
-		else {
-			dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
-		}
-		
+		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
 		dots[i,j].transform.localScale = dotScale;
 
 		if (j >= HEIGHT) {
@@ -97,7 +90,7 @@ public class GridManager : MonoBehaviour {
 			// as players aren't inhumanly fast or the drop speed isn't turned down
 			// to something extremely low
 			DropDots();
-			ReplenishDots();
+			//ReplenishDots();
 			gameState = GameStates.Ready;
 		}
 		else {
@@ -178,7 +171,7 @@ public class GridManager : MonoBehaviour {
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDotIndices.Count > 1) {
-				RemoveDotsAndAssignColorsToNewDots();
+				RemoveDots();
 				gameState = GameStates.DroppingDots;
 			}
 
@@ -187,16 +180,13 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	private void RemoveDotsAndAssignColorsToNewDots() {
-		List<Vector2Int> coordsToRemove = new List<Vector2Int>();
+	private void RemoveDots() {
 		if (IsLoopSelected()) {
-			coordsToRemove = CoordinatesForAllDotsOfColor(currentColorStore.currentColor);
+			RemoveAllDotsOfColor(currentColorStore.currentColor);
 		}
 		else {
-			coordsToRemove = selectedDotIndices;
+			RemoveSelectedDots();
 		}
-
-		RemoveDotsInCoordsList(coordsToRemove);
 	}
 
 	private bool IsLoopSelected() {
@@ -212,27 +202,20 @@ public class GridManager : MonoBehaviour {
 		return false;
 	}
 
-	private List<Vector2Int> CoordinatesForAllDotsOfColor(Color c) {
+	private List<Vector2Int> RemoveAllDotsOfColor(Color c) {
 		List<Vector2Int> coordsList = new List<Vector2Int>();
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (GetDotColor(dots[x,y]) == c) {
-					coordsList.Add(new Vector2Int(x,y));
+				if (GetDotColor(dots[x, y]) == c) {
+					RemoveDotAtCoords(x, y);
 				}
 			}
 		}
 		return coordsList;
 	}
-/* 
+
 	private void RemoveSelectedDots() {
 		foreach (Vector2Int coords in selectedDotIndices) {
-			RemoveDotAtCoords(coords);
-		}
-	}
-*/
-
-	private void RemoveDotsInCoordsList(List<Vector2Int> coordsList) {
-		foreach (Vector2Int coords in coordsList) {
 			RemoveDotAtCoords(coords);
 		}
 	}
@@ -269,8 +252,20 @@ public class GridManager : MonoBehaviour {
 	private void RemoveDotAtCoords(Vector2Int coords) {
 		GameObject dot = DotAtCoords(coords);
 		dot.SetActive(false);
-		dotPool.Enqueue(dot);
+		int destinationRow = NextFreeRowInColumn(coords.x);
+		dots[coords.x, destinationRow] = dot;
 		dots[coords.x, coords.y] = null;
+	}
+
+	private int NextFreeRowInColumn(int columnIndex) {
+		int y = HEIGHT;
+		while (dots[columnIndex, y] != null) {
+			Debug.Log(y.ToString());
+			y++;
+		}
+
+		// TODO: Throw exception if exceeds TOTAL_HEIGHT
+		return y;
 	}
 
 	// TODO: Move this elsewhere in the file
@@ -297,7 +292,7 @@ public class GridManager : MonoBehaviour {
 
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x,y] == null) {
+				if (dots[x, y] == null) {
 					DropDot(x,y);
 				}
 			}
@@ -307,7 +302,7 @@ public class GridManager : MonoBehaviour {
 	private int YIndexToDropFrom(int x, int y) {
 		int ySource = y;
 
-		while (dots[x,ySource] == null && ySource < TOTAL_HEIGHT - 1) {
+		while (dots[x, ySource] == null && ySource < TOTAL_HEIGHT - 1) {
 			ySource++;
 		}
 
@@ -317,7 +312,7 @@ public class GridManager : MonoBehaviour {
 	private void DropDot(int x, int y) {
 		int ySource = YIndexToDropFrom(x, y);
 		
-		if (dots[x,ySource] != null) {
+		if (dots[x, ySource] != null) {
 			MoveDot(x, y, ySource);
 		}
 		else {
@@ -326,10 +321,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void MoveDot(int x, int yDestination, int ySource) {
-		dots[x,yDestination] = dots[x,ySource];
-		dots[x,yDestination].SetActive(true);
+		dots[x, yDestination] = dots[x,ySource];
+		dots[x, yDestination].SetActive(true);
 
-		dots[x,ySource] = null;
+		dots[x, ySource] = null;
 
 		float startingY = ySource * distanceBetweenDots;
 		if (ySource >= HEIGHT) {
@@ -338,19 +333,6 @@ public class GridManager : MonoBehaviour {
 
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		dots[x,yDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
-	}
-
-	private void ReplenishDots() {
-		// Because of the side of the buffer, the "playable" space should always be completely
-		// filled before replenishing dots. Thus, should only need to replenish the "unplayable"
-		// dots above the playable area
-		for (int j = HEIGHT; j < TOTAL_HEIGHT; j++) {
-			for (int i = 0; i < WIDTH; i++) {
-				if (dots[i,j] == null) {
-					CreateDot(i, j);
-				}
-			}
-		}
+		dots[x, yDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
 	}
 }
