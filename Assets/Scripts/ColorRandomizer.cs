@@ -19,7 +19,7 @@ public class ColorRandomizer : MonoBehaviour {
 	// the manager from having any say over the assigned color, how many colors
 	// to choose from, etc
 	void OnEnable() {
-		int colorIndex = Random.Range(0, colors.Length);
+		int colorIndex = !easyMode ? Random.Range(0, colors.Length) : Random.Range(0, 2);;
 		spriteRenderer.color = colors[colorIndex];
 	}
 }

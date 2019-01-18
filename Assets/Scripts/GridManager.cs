@@ -24,6 +24,8 @@ public class GridManager : MonoBehaviour {
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
+	private float dropHeight;
+
 	void Start() {
 		TOTAL_HEIGHT = HEIGHT * 2;
 		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
@@ -43,7 +45,6 @@ public class GridManager : MonoBehaviour {
 		float contentWidth = WIDTH * distanceBetweenDots + (2.0f * horizontalBuffer);
 		float contentHeight = HEIGHT * distanceBetweenDots + (2.0f * verticalBuffer);
 
-
 		Camera mainCamera = Camera.main;
 
 		float minCameraSize = contentHeight;
@@ -62,8 +63,8 @@ public class GridManager : MonoBehaviour {
 		float cameraX = WIDTH * distanceBetweenDots * 0.5f;
 		float cameraY = HEIGHT * distanceBetweenDots * 0.5f;
 		mainCamera.gameObject.transform.position = new Vector3(cameraX, cameraY, -1);
-		Debug.Log(mainCamera.aspect);
-		Debug.Log(mainCamera.orthographicSize);
+
+		dropHeight = (2 * minCameraSize) - distanceBetweenDots;
 	}
 
 	private void CreateDot(int i, int j) {
@@ -122,6 +123,7 @@ public class GridManager : MonoBehaviour {
 	private GameObject GetDotUnderMouseCursor() {
 		Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
+		Debug.Log(mousePosition2D.ToString());
 		RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
 
 		return (hit.collider == null) ? null : hit.collider.gameObject;
@@ -293,11 +295,17 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void MoveDot(int x, int yDestination, int ySource) {
-		dots[x,ySource].SetActive(true);
 		dots[x,yDestination] = dots[x,ySource];
+		gameObject.SetActive(true);
+
 		dots[x,ySource] = null;
 
-		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, (float)ySource * distanceBetweenDots);
+		float startingY = ySource * distanceBetweenDots;
+		if (ySource >= HEIGHT) {
+			startingY += dropHeight;
+		}
+
+		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
 		dots[x,yDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
 	}

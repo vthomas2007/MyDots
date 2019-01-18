@@ -200,7 +200,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 811309316}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4, y: 3.67, z: -10}
+  m_LocalPosition: {x: 4, y: 3.67, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -238,9 +238,10 @@ MonoBehaviour:
   dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
   lineManager: {fileID: 1016040471}
   currentColorStore: {fileID: 1016040472}
-  cameraInstance: {fileID: 0}
   dotScaleFactor: 0.5
-  distanceBetweenDots: 1.43
+  distanceBetweenDots: 1.5
+  WIDTH: 12
+  HEIGHT: 6
 --- !u!4 &1016040470
 Transform:
   m_ObjectHideFlags: 0

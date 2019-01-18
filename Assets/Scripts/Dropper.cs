@@ -28,9 +28,12 @@ public class Dropper : MonoBehaviour {
 
 	public void StartDropping(Vector3 startPos, Vector3 stopPos) {
 		startTime = Time.time;
-		startPosition = startPos;
-		stopPosition = stopPos;
 		isDropping = true;
+
+		startPosition = startPos;
+		gameObject.transform.position = startPosition;
+
+		stopPosition = stopPos;
 	}
 
 	public bool IsDropping() {
