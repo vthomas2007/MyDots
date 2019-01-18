@@ -7,6 +7,7 @@ public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
 	public LineManager lineManager;
 	public CurrentColor currentColorStore;
+	public ColorPool colorPool;
 
 	public float dotScaleFactor = .5f;
 	private Vector2 dotScale;
@@ -34,6 +35,8 @@ public class GridManager : MonoBehaviour {
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				CreateDot(i, j);
+				// TODO: Restructure this
+				SetDotColor(dots[i,j]);
 			}
 		}
 
@@ -269,7 +272,14 @@ public class GridManager : MonoBehaviour {
 		throw new Exception("Trying to get color for a dot that doesn't exist");
 	}
 
+	private void SetDotColor(GameObject dot) {
+		int colorIndex = UnityEngine.Random.Range(0, colorPool.availableColors.Length);
+		dot.GetComponent<SpriteRenderer>().color = colorPool.availableColors[colorIndex];
+	}
+
 	private void DropDots() {
+		List<Vector2Int> coordsToRecolor = new List<Vector2Int>();
+
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				if (dots[x,y] == null) {
@@ -279,14 +289,21 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	private void DropDot(int x, int yDestination) {
-		int ySource = yDestination;
+	private int YIndexToDropFrom(int x, int y) {
+		int ySource = y;
+
 		while (dots[x,ySource] == null && ySource < TOTAL_HEIGHT - 1) {
 			ySource++;
 		}
 
+		return ySource;
+	}
+
+	private void DropDot(int x, int y) {
+		int ySource = YIndexToDropFrom(x, y);
+		
 		if (dots[x,ySource] != null) {
-			MoveDot(x, yDestination, ySource);
+			MoveDot(x, y, ySource);
 		}
 		else {
 			throw new Exception("Unable to drop dot");
