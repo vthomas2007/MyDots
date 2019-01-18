@@ -178,18 +178,62 @@ public class GridManager : MonoBehaviour {
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDotIndices.Count > 1) {
-				if (IsLoopSelected()) {
-					RemoveAllDotsOfColor(currentColorStore.currentColor);
-				}
-				else {
-					RemoveSelectedDots();
-				}
-
+				RemoveDotsAndAssignColorsToNewDots();
 				gameState = GameStates.DroppingDots;
 			}
 
 			selectedDotIndices.Clear();
 			lineManager.RemoveAllLines();
+		}
+	}
+
+	private void RemoveDotsAndAssignColorsToNewDots() {
+		List<Vector2Int> coordsToRemove = new List<Vector2Int>();
+		if (IsLoopSelected()) {
+			coordsToRemove = CoordinatesForAllDotsOfColor(currentColorStore.currentColor);
+		}
+		else {
+			coordsToRemove = selectedDotIndices;
+		}
+
+		RemoveDotsInCoordsList(coordsToRemove);
+	}
+
+	private bool IsLoopSelected() {
+		HashSet<Vector2Int> uniqueSelectedDots = new HashSet<Vector2Int>();
+
+		foreach (Vector2Int indices in selectedDotIndices) {
+			if (uniqueSelectedDots.Contains(indices)) {
+				return true;
+			}
+			uniqueSelectedDots.Add(indices);
+		}
+
+		return false;
+	}
+
+	private List<Vector2Int> CoordinatesForAllDotsOfColor(Color c) {
+		List<Vector2Int> coordsList = new List<Vector2Int>();
+		for (int y = 0; y < HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				if (GetDotColor(dots[x,y]) == c) {
+					coordsList.Add(new Vector2Int(x,y));
+				}
+			}
+		}
+		return coordsList;
+	}
+/* 
+	private void RemoveSelectedDots() {
+		foreach (Vector2Int coords in selectedDotIndices) {
+			RemoveDotAtCoords(coords);
+		}
+	}
+*/
+
+	private void RemoveDotsInCoordsList(List<Vector2Int> coordsList) {
+		foreach (Vector2Int coords in coordsList) {
+			RemoveDotAtCoords(coords);
 		}
 	}
 
@@ -216,35 +260,6 @@ public class GridManager : MonoBehaviour {
 
 	private bool CoordinatesAreAdjacent(Vector2 v1, Vector2 v2) {
 		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
-	}
-
-	private bool IsLoopSelected() {
-		HashSet<Vector2Int> uniqueSelectedDots = new HashSet<Vector2Int>();
-
-		foreach (Vector2Int indices in selectedDotIndices) {
-			if (uniqueSelectedDots.Contains(indices)) {
-				return true;
-			}
-			uniqueSelectedDots.Add(indices);
-		}
-
-		return false;
-	}
-
-	private void RemoveSelectedDots() {
-		foreach (Vector2Int coords in selectedDotIndices) {
-			RemoveDotAtCoords(coords);
-		}
-	}
-
-	private void RemoveAllDotsOfColor(Color c) {
-		for (int j = 0; j < HEIGHT; j++) {
-			for (int i = 0; i < WIDTH; i++) {
-				if (GetDotColor(dots[i,j]) == c) {
-					RemoveDotAtCoords(i,j);
-				}
-			}
-		}
 	}
 
 	private void RemoveDotAtCoords(int x, int y) {
