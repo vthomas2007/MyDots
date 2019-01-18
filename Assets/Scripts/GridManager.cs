@@ -295,7 +295,7 @@ public class GridManager : MonoBehaviour {
 
 	private void MoveDot(int x, int yDestination, int ySource) {
 		dots[x,yDestination] = dots[x,ySource];
-		gameObject.SetActive(true);
+		dots[x,yDestination].SetActive(true);
 
 		dots[x,ySource] = null;
 
