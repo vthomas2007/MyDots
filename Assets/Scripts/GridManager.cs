@@ -26,6 +26,8 @@ public class GridManager : MonoBehaviour {
 
 	private float dropHeight;
 
+	private BaseDotColorStrategy dotColorStrategy;
+
 	void Start() {
 		TOTAL_HEIGHT = HEIGHT * 2;
 		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
@@ -40,6 +42,11 @@ public class GridManager : MonoBehaviour {
 		}
 
 		gameState = GameStates.Ready;
+
+		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
+		if (dotColorStrategy == null) {
+			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
+		}
 
 		// TODO: Move to method or renderer component
 		float horizontalBuffer = 1.0f;
@@ -78,7 +85,7 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 	
-	void Update () {
+	void Update() {
 		if (gameState == GameStates.Ready) {
 			HandleMouseClick();
 			HandleMouseHold();
@@ -90,7 +97,6 @@ public class GridManager : MonoBehaviour {
 			// as players aren't inhumanly fast or the drop speed isn't turned down
 			// to something extremely low
 			DropDots();
-			//ReplenishDots();
 			gameState = GameStates.Ready;
 		}
 		else {
@@ -172,6 +178,7 @@ public class GridManager : MonoBehaviour {
 		if (Input.GetMouseButtonUp(0)) {
 			if (selectedDotIndices.Count > 1) {
 				RemoveDots();
+				AssignColorsToNewDots();
 				gameState = GameStates.DroppingDots;
 			}
 
@@ -232,6 +239,10 @@ public class GridManager : MonoBehaviour {
 		throw new Exception("Unable to find dot");
 	}
 
+	private void AssignColorsToNewDots() {
+		dotColorStrategy.AssignColors(dots, colorPool.availableColors);
+	}
+
 	private GameObject GetSecondToLastSelectedDot() {
 		if (selectedDotIndices.Count > 1) {
 			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
@@ -260,7 +271,6 @@ public class GridManager : MonoBehaviour {
 	private int NextFreeRowInColumn(int columnIndex) {
 		int y = HEIGHT;
 		while (dots[columnIndex, y] != null) {
-			Debug.Log(y.ToString());
 			y++;
 		}
 
@@ -288,8 +298,6 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		List<Vector2Int> coordsToRecolor = new List<Vector2Int>();
-
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				if (dots[x, y] == null) {
