@@ -243,7 +243,7 @@ MonoBehaviour:
   colorPool: {fileID: 1016040473}
   dotScaleFactor: 0.5
   distanceBetweenDots: 1.5
-  WIDTH: 20
+  WIDTH: 7
   HEIGHT: 6
 --- !u!4 &1016040470
 Transform:
@@ -307,6 +307,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1016040468}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f0852354600d8d4394f7fb4ea39cf5d, type: 3}
+  m_Script: {fileID: 11500000, guid: 0790c485dbd280349b02274e40cbd9df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
