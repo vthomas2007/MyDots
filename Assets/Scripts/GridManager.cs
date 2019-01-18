@@ -13,18 +13,20 @@ public class GridManager : MonoBehaviour {
 
 	public float distanceBetweenDots = 1.0f;
 
-	private static int WIDTH = 6;
-	private static int PLAYABLE_HEIGHT = 6;
-	private static int TOTAL_HEIGHT = PLAYABLE_HEIGHT * 2;
-	private GameObject[,] dots = new GameObject[WIDTH, TOTAL_HEIGHT];
+	public int WIDTH = 6;
+	public int HEIGHT = 6;
+	private int TOTAL_HEIGHT;
 
+	private GameObject[,] dots;
 	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
 	private Queue<GameObject> dotPool = new Queue<GameObject>();
 
 	private enum GameStates { Ready, DroppingDots };
 	private GameStates gameState;
 
-	void Start () {
+	void Start() {
+		TOTAL_HEIGHT = HEIGHT * 2;
+		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
 		
 		for (int j = 0; j < TOTAL_HEIGHT; j++) {
@@ -34,6 +36,34 @@ public class GridManager : MonoBehaviour {
 		}
 
 		gameState = GameStates.Ready;
+
+		// TODO: Move to method or renderer component
+		float horizontalBuffer = 1.0f;
+		float verticalBuffer = 1.0f;
+		float contentWidth = WIDTH * distanceBetweenDots + (2.0f * horizontalBuffer);
+		float contentHeight = HEIGHT * distanceBetweenDots + (2.0f * verticalBuffer);
+
+
+		Camera mainCamera = Camera.main;
+
+		float minCameraSize = contentHeight;
+		float cameraWidthWithMinCameraSize = minCameraSize * mainCamera.aspect;
+
+		if (cameraWidthWithMinCameraSize < contentWidth) {
+			float expandWidthAmount = contentWidth - cameraWidthWithMinCameraSize;
+			float expandHeightAmount = expandWidthAmount / mainCamera.aspect;
+			minCameraSize += expandHeightAmount;
+		}
+
+		minCameraSize *= 0.5f;
+
+		mainCamera.orthographicSize = minCameraSize;
+		
+		float cameraX = WIDTH * distanceBetweenDots * 0.5f;
+		float cameraY = HEIGHT * distanceBetweenDots * 0.5f;
+		mainCamera.gameObject.transform.position = new Vector3(cameraX, cameraY, -1);
+		Debug.Log(mainCamera.aspect);
+		Debug.Log(mainCamera.orthographicSize);
 	}
 
 	private void CreateDot(int i, int j) {
@@ -46,7 +76,7 @@ public class GridManager : MonoBehaviour {
 		
 		dots[i,j].transform.localScale = dotScale;
 
-		if (j >= PLAYABLE_HEIGHT) {
+		if (j >= HEIGHT) {
 			dots[i,j].SetActive(false);
 		}
 	}
@@ -160,7 +190,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private Vector2Int GetArrayCoordinatesOfDot(GameObject dot) {
-		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
+		for (int j = 0; j < HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == dot) {
 					return new Vector2Int(i,j);
@@ -204,7 +234,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void RemoveAllDotsOfColor(Color c) {
-		for (int j = 0; j < PLAYABLE_HEIGHT; j++) {
+		for (int j = 0; j < HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (GetDotColor(dots[i,j]) == c) {
 					RemoveDotAtCoords(i,j);
@@ -239,7 +269,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		for (int y = 0; y < PLAYABLE_HEIGHT; y++) {
+		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				if (dots[x,y] == null) {
 					DropDot(x,y);
@@ -276,7 +306,7 @@ public class GridManager : MonoBehaviour {
 		// Because of the side of the buffer, the "playable" space should always be completely
 		// filled before replenishing dots. Thus, should only need to replenish the "unplayable"
 		// dots above the playable area
-		for (int j = PLAYABLE_HEIGHT; j < TOTAL_HEIGHT; j++) {
+		for (int j = HEIGHT; j < TOTAL_HEIGHT; j++) {
 			for (int i = 0; i < WIDTH; i++) {
 				if (dots[i,j] == null) {
 					CreateDot(i, j);
