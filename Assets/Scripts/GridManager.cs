@@ -39,8 +39,6 @@ public class GridManager : MonoBehaviour {
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				CreateDot(x, y);
-				// TODO: Restructure this
-				SetDotCellColor(dots[x, y]);
 			}
 		}
 
@@ -61,6 +59,15 @@ public class GridManager : MonoBehaviour {
 		if (y >= HEIGHT) {
 			dots[x, y].dot.SetActive(false);
 		}
+
+		SetRandomDotCellColor(dots[x, y]);
+	}
+
+	private void SetRandomDotCellColor(DotCell dotCell) {
+		int colorIndex = UnityEngine.Random.Range(0, colorPool.availableColors.Length);
+		Color newColor = colorPool.availableColors[colorIndex];
+
+		dotCell.SetColor(newColor);
 	}
 
 	// TODO: Determine if this should live somewhere else
@@ -260,13 +267,6 @@ public class GridManager : MonoBehaviour {
 		}
 
 		throw new Exception("Trying to get color for a dot that doesn't exist");
-	}
-
-	private void SetDotCellColor(DotCell dotCell) {
-		int colorIndex = UnityEngine.Random.Range(0, colorPool.availableColors.Length);
-		Color newColor = colorPool.availableColors[colorIndex];
-
-		dotCell.SetColor(newColor);
 	}
 
 	private void DropDots() {
