@@ -18,7 +18,7 @@ public class GridManager : MonoBehaviour {
 	public int HEIGHT = 6;
 	private int TOTAL_HEIGHT;
 
-	private GameObject[,] dots;
+	private DotCell[,] dots;
 	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
 
 	private float dropHeight;
@@ -27,14 +27,20 @@ public class GridManager : MonoBehaviour {
 
 	void Start() {
 		TOTAL_HEIGHT = HEIGHT * 2;
-		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
+		dots = new DotCell[WIDTH, TOTAL_HEIGHT];
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
+
+		for (int y = 0; y < TOTAL_HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				dots[x, y] = new DotCell();
+			}
+		}
 		
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				CreateDot(x, y);
 				// TODO: Restructure this
-				SetDotColor(dots[x, y]);
+				SetDotCellColor(dots[x, y]);
 			}
 		}
 
@@ -49,11 +55,11 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void CreateDot(int x, int y) {
-		dots[x, y] = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
-		dots[x, y].transform.localScale = dotScale;
+		dots[x, y].dot = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
+		dots[x, y].dot.transform.localScale = dotScale;
 
 		if (y >= HEIGHT) {
-			dots[x, y].SetActive(false);
+			dots[x, y].dot.SetActive(false);
 		}
 	}
 
@@ -88,11 +94,12 @@ public class GridManager : MonoBehaviour {
 	}
 
 	public void SelectDot(GameObject dot) {
-		// TODO: Look into caching the color of the dots somewhere outside of a component
-		currentColorStore.currentColor = dot.GetComponent<SpriteRenderer>().color;
+		Vector2Int coords = GetArrayCoordinatesOfDot(dot);
+		selectedDotIndices.Add(coords);
+
+		currentColorStore.currentColor = dots[coords.x, coords.y].Color();
 
 		lineManager.EnableLineToCursor();
-		selectedDotIndices.Add(GetArrayCoordinatesOfDot(dot));
 	}
 
 	public void UpdateLineToCursor() {
@@ -123,7 +130,7 @@ public class GridManager : MonoBehaviour {
 	private GameObject GetLastSelectedDot() {
 		if (selectedDotIndices.Count > 0) {
 			Vector2Int indices = selectedDotIndices[selectedDotIndices.Count - 1];
-			return dots[indices.x, indices.y];
+			return dots[indices.x, indices.y].dot;
 		}
 
 		return null;
@@ -171,7 +178,7 @@ public class GridManager : MonoBehaviour {
 		List<Vector2Int> coordsList = new List<Vector2Int>();
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (GetDotColor(dots[x, y]) == c) {
+				if (dots[x, y].Color() == c) {
 					RemoveDotAtCoords(x, y);
 				}
 			}
@@ -188,7 +195,7 @@ public class GridManager : MonoBehaviour {
 	private Vector2Int GetArrayCoordinatesOfDot(GameObject dot) {
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x, y] == dot) {
+				if (dots[x, y].dot == dot) {
 					return new Vector2Int(x, y);
 				}
 			}
@@ -204,7 +211,7 @@ public class GridManager : MonoBehaviour {
 	private GameObject GetSecondToLastSelectedDot() {
 		if (selectedDotIndices.Count > 1) {
 			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
-			return dots[coords.x, coords.y];
+			return DotAtCoords(coords);
 		}
 
 		return null;
@@ -224,14 +231,16 @@ public class GridManager : MonoBehaviour {
 	private void RemoveDotAtCoords(Vector2Int coords) {
 		GameObject dot = DotAtCoords(coords);
 		dot.SetActive(false);
+
+		// Recycle dot by moving it above the playable grid
 		int destinationRow = NextFreeRowInColumn(coords.x);
-		dots[coords.x, destinationRow] = dot;
-		dots[coords.x, coords.y] = null;
+		dots[coords.x, destinationRow].dot = dot;
+		dots[coords.x, coords.y].dot = null;
 	}
 
 	private int NextFreeRowInColumn(int columnIndex) {
 		int y = HEIGHT;
-		while (dots[columnIndex, y] != null) {
+		while (dots[columnIndex, y].dot != null) {
 			y++;
 		}
 
@@ -241,7 +250,7 @@ public class GridManager : MonoBehaviour {
 
 	// TODO: Move this elsewhere in the file
 	private GameObject DotAtCoords(Vector2Int coords) {
-		return dots[coords.x, coords.y];
+		return dots[coords.x, coords.y].dot;
 	}
 
 	private Color GetDotColor(GameObject dot) {
@@ -253,15 +262,17 @@ public class GridManager : MonoBehaviour {
 		throw new Exception("Trying to get color for a dot that doesn't exist");
 	}
 
-	private void SetDotColor(GameObject dot) {
+	private void SetDotCellColor(DotCell dotCell) {
 		int colorIndex = UnityEngine.Random.Range(0, colorPool.availableColors.Length);
-		dot.GetComponent<SpriteRenderer>().color = colorPool.availableColors[colorIndex];
+		Color newColor = colorPool.availableColors[colorIndex];
+
+		dotCell.SetColor(newColor);
 	}
 
 	private void DropDots() {
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x, y] == null) {
+				if (dots[x, y].dot == null) {
 					DropDot(x,y);
 				}
 			}
@@ -271,7 +282,7 @@ public class GridManager : MonoBehaviour {
 	private void DropDot(int x, int y) {
 		int ySource = YIndexToDropFrom(x, y);
 		
-		if (dots[x, ySource] != null) {
+		if (dots[x, ySource].dot != null) {
 			MoveDot(x, y, ySource);
 		}
 		else {
@@ -282,7 +293,7 @@ public class GridManager : MonoBehaviour {
 	private int YIndexToDropFrom(int x, int y) {
 		int ySource = y;
 
-		while (dots[x, ySource] == null && ySource < TOTAL_HEIGHT - 1) {
+		while (dots[x, ySource].dot == null && ySource < TOTAL_HEIGHT - 1) {
 			ySource++;
 		}
 
@@ -290,10 +301,11 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void MoveDot(int x, int yDestination, int ySource) {
-		dots[x, yDestination] = dots[x, ySource];
-		dots[x, yDestination].SetActive(true);
+		dots[x, yDestination].dot = dots[x, ySource].dot;
+		dots[x, yDestination].dot.SetActive(true);
+		dots[x, yDestination].SetColor(dots[x, ySource].Color());
 
-		dots[x, ySource] = null;
+		dots[x, ySource].dot = null;
 
 		float startingY = ySource * distanceBetweenDots;
 		if (ySource >= HEIGHT) {
@@ -303,6 +315,6 @@ public class GridManager : MonoBehaviour {
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
 		// TODO: See if this GetComponent call is necessary
-		dots[x, yDestination].GetComponent<Dropper>().Drop(startPosition, stopPosition);
+		dots[x, yDestination].dot.GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 }
