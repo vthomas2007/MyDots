@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
-	public LineManager lineManager;
 	public CurrentColor currentColorStore;
+	public LineManager lineManager;
 	public ColorPool colorPool;
 
 	public float dotScaleFactor = .5f;
@@ -20,9 +20,6 @@ public class GridManager : MonoBehaviour {
 
 	private GameObject[,] dots;
 	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
-
-	private enum GameStates { Ready, DroppingDots };
-	private GameStates gameState;
 
 	private float dropHeight;
 
@@ -41,14 +38,27 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 
-		gameState = GameStates.Ready;
-
 		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
 		if (dotColorStrategy == null) {
 			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
 		}
 
-		// TODO: Move to method or renderer component
+		InitializeCamera();
+
+		// TODO: Look into initializing array above dots and then dropping all of them
+	}
+
+	private void CreateDot(int i, int j) {
+		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
+		dots[i,j].transform.localScale = dotScale;
+
+		if (j >= HEIGHT) {
+			dots[i,j].SetActive(false);
+		}
+	}
+
+	// TODO: Determine if this should live somewhere else
+	private void InitializeCamera() {
 		float horizontalBuffer = 1.0f;
 		float verticalBuffer = 1.0f;
 		float contentWidth = WIDTH * distanceBetweenDots + (2.0f * horizontalBuffer);
@@ -73,88 +83,38 @@ public class GridManager : MonoBehaviour {
 		float cameraY = HEIGHT * distanceBetweenDots * 0.5f;
 		mainCamera.gameObject.transform.position = new Vector3(cameraX, cameraY, -1);
 
+		// Ensure dots always drop from above the top of the screen
 		dropHeight = (2 * minCameraSize) - distanceBetweenDots;
 	}
 
-	private void CreateDot(int i, int j) {
-		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
-		dots[i,j].transform.localScale = dotScale;
+	public void SelectDot(GameObject dot) {
+		// TODO: Look into caching the color of the dots somewhere outside of a component
+		currentColorStore.currentColor = dot.GetComponent<SpriteRenderer>().color;
 
-		if (j >= HEIGHT) {
-			dots[i,j].SetActive(false);
-		}
+		lineManager.EnableLineToCursor();
+		selectedDotIndices.Add(GetArrayCoordinatesOfDot(dot));
 	}
-	
-	void Update() {
-		if (gameState == GameStates.Ready) {
-			HandleMouseClick();
-			HandleMouseHold();
-			HandleMouseRelease();
-		}
-		else if (gameState == GameStates.DroppingDots) {
-			// Note that this doesn't wait for the dots to finish dropping before
-			// returning the GameState to ready. This won't be a problem as long
-			// as players aren't inhumanly fast or the drop speed isn't turned down
-			// to something extremely low
-			DropDots();
-			gameState = GameStates.Ready;
-		}
-		else {
-			throw new Exception("Invalid GameState");
+
+	public void UpdateLineToCursor() {
+		GameObject lastSelectedDot = GetLastSelectedDot();
+		
+		if (lastSelectedDot != null) {
+			lineManager.DrawLineToCursorFromDot(lastSelectedDot);
 		}
 	}
 
-	// TODO: See if these can easily be moved to an InputHandler class or component
-	private void HandleMouseClick() {
-		if (Input.GetMouseButtonDown(0)) {
-			GameObject clickedDot = GetDotUnderMouseCursor();
+	public void AddOrRemoveDotIfAdjacentToLastSelected(GameObject dot) {
+		GameObject lastSelectedDot = GetLastSelectedDot();
 
-			if (clickedDot != null) {
-				// TODO: Look into caching the color of the dots somewhere outside of a component
-				currentColorStore.currentColor = clickedDot.GetComponent<SpriteRenderer>().color;
-
-				if (selectedDotIndices.Count == 0) {
-					lineManager.EnableLineToCursor();
-				}
-
-				selectedDotIndices.Add(GetArrayCoordinatesOfDot(clickedDot));
+		if (DotsAreAdjacent(dot, lastSelectedDot)) {
+			if (dot == GetSecondToLastSelectedDot()) {
+				Backtrack();
 			}
-		}
-	}
-
-	private GameObject GetDotUnderMouseCursor() {
-		Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		Vector2 mousePosition2D = new Vector2(mousePosition.x, mousePosition.y);
-		RaycastHit2D hit = Physics2D.Raycast(mousePosition2D, Vector2.zero);
-
-		return (hit.collider == null) ? null : hit.collider.gameObject;
-	}
-
-	private void HandleMouseHold() {
-		// TODO Look into breaking up this conditional, getting pretty unwieldy
-		if (Input.GetMouseButton(0)) {
-			GameObject lastSelectedDot = GetLastSelectedDot();
-			
-			if (lastSelectedDot != null) {
-				lineManager.DrawLineToCursorFromDot(lastSelectedDot);
-
-				GameObject dotUnderCursor = GetDotUnderMouseCursor();
-				if (dotUnderCursor != null) {
-					
-					Vector2Int arrayCoordinatesUnderCursor = GetArrayCoordinatesOfDot(dotUnderCursor);
-					Vector2Int arrayCoordinatesOfLastSelectedDot = GetArrayCoordinatesOfDot(lastSelectedDot);
-
-					if (CoordinatesAreAdjacent(arrayCoordinatesUnderCursor, arrayCoordinatesOfLastSelectedDot)) {
-						if (dotUnderCursor == GetSecondToLastSelectedDot()) {
-							Backtrack();
-						}
-						else {
-							if (currentColorStore.currentColor == GetDotColor(dotUnderCursor)) {
-								lineManager.AddLine(lastSelectedDot, dotUnderCursor);
-								selectedDotIndices.Add(arrayCoordinatesUnderCursor);
-							}
-						}
-					}
+			else {
+				if (currentColorStore.currentColor == GetDotColor(dot)) {
+					Vector2Int arrayCoordinatesUnderCursor = GetArrayCoordinatesOfDot(dot);
+					lineManager.AddLine(lastSelectedDot, dot);
+					selectedDotIndices.Add(arrayCoordinatesUnderCursor);
 				}
 			}
 		}
@@ -174,17 +134,15 @@ public class GridManager : MonoBehaviour {
 		lineManager.RemoveLastLine();
 	}
 
-	private void HandleMouseRelease() {
-		if (Input.GetMouseButtonUp(0)) {
-			if (selectedDotIndices.Count > 1) {
-				RemoveDots();
-				AssignColorsToNewDots();
-				gameState = GameStates.DroppingDots;
-			}
-
-			selectedDotIndices.Clear();
-			lineManager.RemoveAllLines();
+	public void RemoveAndDropDots() {
+		if (selectedDotIndices.Count > 1) {
+			RemoveDots();
+			AssignColorsToNewDots();
+			DropDots();
 		}
+
+		selectedDotIndices.Clear();
+		lineManager.RemoveAllLines();
 	}
 
 	private void RemoveDots() {
@@ -252,7 +210,10 @@ public class GridManager : MonoBehaviour {
 		return null;
 	}
 
-	private bool CoordinatesAreAdjacent(Vector2 v1, Vector2 v2) {
+	private bool DotsAreAdjacent(GameObject dot1, GameObject dot2) {
+		Vector2Int v1 = GetArrayCoordinatesOfDot(dot1);
+		Vector2Int v2 = GetArrayCoordinatesOfDot(dot2);
+
 		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
 	}
 
@@ -307,16 +268,6 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	private int YIndexToDropFrom(int x, int y) {
-		int ySource = y;
-
-		while (dots[x, ySource] == null && ySource < TOTAL_HEIGHT - 1) {
-			ySource++;
-		}
-
-		return ySource;
-	}
-
 	private void DropDot(int x, int y) {
 		int ySource = YIndexToDropFrom(x, y);
 		
@@ -326,6 +277,16 @@ public class GridManager : MonoBehaviour {
 		else {
 			throw new Exception("Unable to drop dot");
 		}
+	}
+
+	private int YIndexToDropFrom(int x, int y) {
+		int ySource = y;
+
+		while (dots[x, ySource] == null && ySource < TOTAL_HEIGHT - 1) {
+			ySource++;
+		}
+
+		return ySource;
 	}
 
 	private void MoveDot(int x, int yDestination, int ySource) {
@@ -341,6 +302,7 @@ public class GridManager : MonoBehaviour {
 
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		dots[x, yDestination].GetComponent<Dropper>().StartDropping(startPosition, stopPosition);
+		// TODO: See if this GetComponent call is necessary
+		dots[x, yDestination].GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 }
