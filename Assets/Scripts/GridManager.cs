@@ -30,11 +30,11 @@ public class GridManager : MonoBehaviour {
 		dots = new GameObject[WIDTH, TOTAL_HEIGHT];
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
 		
-		for (int j = 0; j < HEIGHT; j++) {
-			for (int i = 0; i < WIDTH; i++) {
-				CreateDot(i, j);
+		for (int y = 0; y < HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				CreateDot(x, y);
 				// TODO: Restructure this
-				SetDotColor(dots[i,j]);
+				SetDotColor(dots[x, y]);
 			}
 		}
 
@@ -48,12 +48,12 @@ public class GridManager : MonoBehaviour {
 		// TODO: Look into initializing array above dots and then dropping all of them
 	}
 
-	private void CreateDot(int i, int j) {
-		dots[i,j] = Instantiate(dotPrefab, new Vector3((float)i * distanceBetweenDots, (float)j * distanceBetweenDots), Quaternion.identity);
-		dots[i,j].transform.localScale = dotScale;
+	private void CreateDot(int x, int y) {
+		dots[x, y] = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
+		dots[x, y].transform.localScale = dotScale;
 
-		if (j >= HEIGHT) {
-			dots[i,j].SetActive(false);
+		if (y >= HEIGHT) {
+			dots[x, y].SetActive(false);
 		}
 	}
 
@@ -103,10 +103,10 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
-	public void AddOrRemoveDotIfAdjacentToLastSelected(GameObject dot) {
+	public void AddToOrRemoveFromSelectedList(GameObject dot) {
 		GameObject lastSelectedDot = GetLastSelectedDot();
 
-		if (DotsAreAdjacent(dot, lastSelectedDot)) {
+		if (lastSelectedDot != null && DotsAreAdjacent(dot, lastSelectedDot)) {
 			if (dot == GetSecondToLastSelectedDot()) {
 				Backtrack();
 			}
@@ -186,10 +186,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private Vector2Int GetArrayCoordinatesOfDot(GameObject dot) {
-		for (int j = 0; j < HEIGHT; j++) {
-			for (int i = 0; i < WIDTH; i++) {
-				if (dots[i,j] == dot) {
-					return new Vector2Int(i,j);
+		for (int y = 0; y < HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				if (dots[x, y] == dot) {
+					return new Vector2Int(x, y);
 				}
 			}
 		}
@@ -290,7 +290,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void MoveDot(int x, int yDestination, int ySource) {
-		dots[x, yDestination] = dots[x,ySource];
+		dots[x, yDestination] = dots[x, ySource];
 		dots[x, yDestination].SetActive(true);
 
 		dots[x, ySource] = null;

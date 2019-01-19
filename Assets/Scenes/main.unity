@@ -238,8 +238,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
-  lineManager: {fileID: 1016040471}
   currentColorStore: {fileID: 1016040472}
+  lineManager: {fileID: 1016040471}
   colorPool: {fileID: 1016040473}
   dotScaleFactor: 0.5
   distanceBetweenDots: 1.5
@@ -296,9 +296,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableColors:
-  - {r: 1, g: 0.5102247, b: 0, a: 1}
-  - {r: 0, g: 0.94190407, b: 1, a: 1}
-  - {r: 0, g: 1, b: 0.13536787, a: 1}
+  - {r: 0.8018868, g: 0.46257567, b: 0.10969208, a: 1}
+  - {r: 0.19428623, g: 0.6684763, b: 0.6981132, a: 1}
+  - {r: 0.21586864, g: 0.7264151, b: 0.22847605, a: 1}
 --- !u!114 &1016040474
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,6 +307,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 1016040468}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0790c485dbd280349b02274e40cbd9df, type: 3}
+  m_Script: {fileID: 11500000, guid: e758d65f6a6e00542851b3b5074cd961, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

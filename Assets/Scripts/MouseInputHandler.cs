@@ -31,7 +31,7 @@ public class MouseInputHandler : MonoBehaviour {
 			
 			GameObject dotUnderCursor = GetDotUnderMouseCursor();
 			if (dotUnderCursor != null) {
-				gridManager.AddOrRemoveDotIfAdjacentToLastSelected(dotUnderCursor);
+				gridManager.AddToOrRemoveFromSelectedList(dotUnderCursor);
 			}
 		}
 	}
