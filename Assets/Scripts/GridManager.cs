@@ -18,7 +18,7 @@ public class GridManager : MonoBehaviour {
 	public int HEIGHT = 6;
 	private int TOTAL_HEIGHT;
 
-	private DotCell[,] dots;
+	private DotGrid grid;
 	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
 
 	private float dropHeight;
@@ -26,16 +26,13 @@ public class GridManager : MonoBehaviour {
 	private BaseDotColorStrategy dotColorStrategy;
 
 	void Start() {
-		TOTAL_HEIGHT = HEIGHT * 2;
-		dots = new DotCell[WIDTH, TOTAL_HEIGHT];
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
 
-		for (int y = 0; y < TOTAL_HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				dots[x, y] = new DotCell();
-			}
-		}
-		
+
+		TOTAL_HEIGHT = HEIGHT * 2;
+
+		grid = new DotGrid(WIDTH, TOTAL_HEIGHT);
+
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
 				CreateDot(x, y);
@@ -53,21 +50,14 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void CreateDot(int x, int y) {
-		dots[x, y].dot = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
-		dots[x, y].dot.transform.localScale = dotScale;
+		GameObject newDot = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
+		newDot.transform.localScale = dotScale;
 
 		if (y >= HEIGHT) {
-			dots[x, y].dot.SetActive(false);
+			newDot.SetActive(false);
 		}
 
-		SetRandomDotCellColor(dots[x, y]);
-	}
-
-	private void SetRandomDotCellColor(DotCell dotCell) {
-		int colorIndex = UnityEngine.Random.Range(0, colorPool.availableColors.Length);
-		Color newColor = colorPool.availableColors[colorIndex];
-
-		dotCell.SetColor(newColor);
+		grid.AddDot(x, y, newDot, colorPool.GetRandomColor());
 	}
 
 	// TODO: Determine if this should live somewhere else
@@ -101,10 +91,10 @@ public class GridManager : MonoBehaviour {
 	}
 
 	public void SelectDot(GameObject dot) {
-		Vector2Int coords = GetArrayCoordinatesOfDot(dot);
+		Vector2Int coords = grid.GetCoordinatesOfDot(dot);
 		selectedDotIndices.Add(coords);
 
-		currentColorStore.currentColor = dots[coords.x, coords.y].Color();
+		currentColorStore.currentColor = grid.GetColor(coords.x, coords.y);
 
 		lineManager.EnableLineToCursor();
 	}
@@ -120,13 +110,15 @@ public class GridManager : MonoBehaviour {
 	public void AddToOrRemoveFromSelectedList(GameObject dot) {
 		GameObject lastSelectedDot = GetLastSelectedDot();
 
+		// TODO: Consider reworking this to use coords & leverage
+		// the grid to get the color instead of reaching into the dot
 		if (lastSelectedDot != null && DotsAreAdjacent(dot, lastSelectedDot)) {
 			if (dot == GetSecondToLastSelectedDot()) {
 				Backtrack();
 			}
 			else {
 				if (currentColorStore.currentColor == GetDotColor(dot)) {
-					Vector2Int arrayCoordinatesUnderCursor = GetArrayCoordinatesOfDot(dot);
+					Vector2Int arrayCoordinatesUnderCursor = grid.GetCoordinatesOfDot(dot);
 					lineManager.AddLine(lastSelectedDot, dot);
 					selectedDotIndices.Add(arrayCoordinatesUnderCursor);
 				}
@@ -136,8 +128,8 @@ public class GridManager : MonoBehaviour {
 
 	private GameObject GetLastSelectedDot() {
 		if (selectedDotIndices.Count > 0) {
-			Vector2Int indices = selectedDotIndices[selectedDotIndices.Count - 1];
-			return dots[indices.x, indices.y].dot;
+			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 1];
+			return grid.GetDot(coords.x, coords.y);
 		}
 
 		return null;
@@ -181,12 +173,13 @@ public class GridManager : MonoBehaviour {
 		return false;
 	}
 
+	// TODO: Determine if this belongs here or in the Grid class
 	private List<Vector2Int> RemoveAllDotsOfColor(Color c) {
 		List<Vector2Int> coordsList = new List<Vector2Int>();
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x, y].Color() == c) {
-					RemoveDotAtCoords(x, y);
+				if (grid.GetColor(x, y) == c) {
+					grid.RemoveDotAtCoords(x, y);
 				}
 			}
 		}
@@ -195,69 +188,28 @@ public class GridManager : MonoBehaviour {
 
 	private void RemoveSelectedDots() {
 		foreach (Vector2Int coords in selectedDotIndices) {
-			RemoveDotAtCoords(coords);
+			grid.RemoveDotAtCoords(coords);
 		}
-	}
-
-	private Vector2Int GetArrayCoordinatesOfDot(GameObject dot) {
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x, y].dot == dot) {
-					return new Vector2Int(x, y);
-				}
-			}
-		}
-
-		throw new Exception("Unable to find dot");
 	}
 
 	private void AssignColorsToNewDots() {
-		dotColorStrategy.AssignColors(dots, colorPool.availableColors);
+		dotColorStrategy.AssignColors(grid, colorPool.availableColors);
 	}
 
 	private GameObject GetSecondToLastSelectedDot() {
 		if (selectedDotIndices.Count > 1) {
 			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
-			return DotAtCoords(coords);
+			return grid.GetDot(coords);
 		}
 
 		return null;
 	}
 
 	private bool DotsAreAdjacent(GameObject dot1, GameObject dot2) {
-		Vector2Int v1 = GetArrayCoordinatesOfDot(dot1);
-		Vector2Int v2 = GetArrayCoordinatesOfDot(dot2);
+		Vector2Int v1 = grid.GetCoordinatesOfDot(dot1);
+		Vector2Int v2 = grid.GetCoordinatesOfDot(dot2);
 
 		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
-	}
-
-	private void RemoveDotAtCoords(int x, int y) {
-		RemoveDotAtCoords(new Vector2Int(x, y));
-	}
-	
-	private void RemoveDotAtCoords(Vector2Int coords) {
-		GameObject dot = DotAtCoords(coords);
-		dot.SetActive(false);
-
-		// Recycle dot by moving it above the playable grid
-		int destinationRow = NextFreeRowInColumn(coords.x);
-		dots[coords.x, destinationRow].dot = dot;
-		dots[coords.x, coords.y].dot = null;
-	}
-
-	private int NextFreeRowInColumn(int columnIndex) {
-		int y = HEIGHT;
-		while (dots[columnIndex, y].dot != null) {
-			y++;
-		}
-
-		// TODO: Throw exception if exceeds TOTAL_HEIGHT
-		return y;
-	}
-
-	// TODO: Move this elsewhere in the file
-	private GameObject DotAtCoords(Vector2Int coords) {
-		return dots[coords.x, coords.y].dot;
 	}
 
 	private Color GetDotColor(GameObject dot) {
@@ -272,7 +224,7 @@ public class GridManager : MonoBehaviour {
 	private void DropDots() {
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
-				if (dots[x, y].dot == null) {
+				if (grid.CellIsEmpty(x, y)) {
 					DropDot(x,y);
 				}
 			}
@@ -282,7 +234,7 @@ public class GridManager : MonoBehaviour {
 	private void DropDot(int x, int y) {
 		int ySource = YIndexToDropFrom(x, y);
 		
-		if (dots[x, ySource].dot != null) {
+		if (grid.CellIsOccupied(x, ySource)) {
 			MoveDot(x, y, ySource);
 		}
 		else {
@@ -290,22 +242,22 @@ public class GridManager : MonoBehaviour {
 		}
 	}
 
+	// TODO: Determine if this belongs in the grid or here
 	private int YIndexToDropFrom(int x, int y) {
 		int ySource = y;
 
-		while (dots[x, ySource].dot == null && ySource < TOTAL_HEIGHT - 1) {
+		while (grid.CellIsEmpty(x, ySource) && ySource < TOTAL_HEIGHT - 1) {
 			ySource++;
 		}
 
 		return ySource;
+		// TODO: Throw exception if exceeds TOTAL_HEIGHT
 	}
 
+	// TODO: Swap source and destination param order
 	private void MoveDot(int x, int yDestination, int ySource) {
-		dots[x, yDestination].dot = dots[x, ySource].dot;
-		dots[x, yDestination].dot.SetActive(true);
-		dots[x, yDestination].SetColor(dots[x, ySource].Color());
-
-		dots[x, ySource].dot = null;
+		// TODO: The motivation for the grid refactor: Safe place to move dot AND colors
+		grid.MoveDot(x, yDestination, ySource);
 
 		float startingY = ySource * distanceBetweenDots;
 		if (ySource >= HEIGHT) {
@@ -315,6 +267,6 @@ public class GridManager : MonoBehaviour {
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
 		// TODO: See if this GetComponent call is necessary
-		dots[x, yDestination].dot.GetComponent<Dropper>().Drop(startPosition, stopPosition);
+		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 }

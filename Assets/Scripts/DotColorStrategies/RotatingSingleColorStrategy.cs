@@ -5,15 +5,15 @@ using UnityEngine;
 public class RotatingSingleColorStrategy : BaseDotColorStrategy {
 	private int colorIndex = 0;
 
-	public override void AssignColors(DotCell[,] dots, Color[] colors) {
-		int columns = dots.GetLength(0);
-		int rows = dots.GetLength(1);
+	public override void AssignColors(DotGrid grid, Color[] colors) {
+		int columns = grid.Width();
+		int rows = grid.Height();
 		int startingRow = rows / 2;
 
 		for (int y = startingRow; y < rows; y++) {
 			for (int x = 0; x < columns; x++) {
-				if (dots[x, y].dot != null) {
-					dots[x, y].SetColor(colors[colorIndex]);
+				if (grid.CellIsOccupied(x, y)) {
+					grid.SetColor(x, y, colors[colorIndex]);
 				}
 			}
 		}

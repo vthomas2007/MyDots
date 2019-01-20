@@ -243,7 +243,7 @@ MonoBehaviour:
   colorPool: {fileID: 1016040473}
   dotScaleFactor: 0.5
   distanceBetweenDots: 1.5
-  WIDTH: 7
+  WIDTH: 6
   HEIGHT: 6
 --- !u!4 &1016040470
 Transform:
@@ -297,6 +297,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableColors:
   - {r: 0.8018868, g: 0.46257567, b: 0.10969208, a: 1}
+  - {r: 0.13216463, g: 0.8, b: 0.109803915, a: 1}
+  - {r: 0.8, g: 0.109803915, b: 0.16321734, a: 1}
+  - {r: 0.11049703, g: 0.109803915, b: 0.8, a: 1}
 --- !u!114 &1016040474
 MonoBehaviour:
   m_ObjectHideFlags: 0

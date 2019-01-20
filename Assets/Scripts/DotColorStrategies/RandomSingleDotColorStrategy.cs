@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class RandomSingleDotColorStrategy : BaseDotColorStrategy {
-	public override void AssignColors(DotCell[,] dots, Color[] colors) {
-		int columns = dots.GetLength(0);
-		int rows = dots.GetLength(1);
+	public override void AssignColors(DotGrid grid, Color[] colors) {
+		int columns = grid.Width();
+		int rows = grid.Height();
 		int startingRow = rows / 2;
 
 		int colorCount = colors.Length;
@@ -13,8 +13,8 @@ public class RandomSingleDotColorStrategy : BaseDotColorStrategy {
 
 		for (int y = startingRow; y < rows; y++) {
 			for (int x = 0; x < columns; x++) {
-				if (dots[x, y] != null) {
-					dots[x, y].SetColor(c);
+				if (grid.CellIsOccupied(x, y)) {
+					grid.SetColor(x, y, c);
 				}
 			}
 		}

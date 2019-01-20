@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class RandomDotColorStrategy : BaseDotColorStrategy {
-	public override void AssignColors(DotCell[,] dots, Color[] colors) {
-		// TODO: Figure out how to handle/avoid all this boilerplate
-		int columns = dots.GetLength(0);
-		int rows = dots.GetLength(1);
+	public override void AssignColors(DotGrid grid, Color[] colors) {
+		int columns = grid.Width();
+		int rows = grid.Height();
 		int startingRow = rows / 2;
 
 		int colorCount = colors.Length;
 
 		for (int y = startingRow; y < rows; y++) {
 			for (int x = 0; x < columns; x++) {
-				if (dots[x, y].dot != null) {
+				if (grid.CellIsOccupied(x, y)) {
 					Color c = colors[Random.Range(0, colorCount)];
-					dots[x, y].SetColor(c);
+					grid.SetColor(x, y, c);
 				}
 			}
 		}
