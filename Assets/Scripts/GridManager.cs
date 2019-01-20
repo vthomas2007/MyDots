@@ -12,7 +12,9 @@ public class GridManager : MonoBehaviour {
 	public float dotScaleFactor = .5f;
 	private Vector2 dotScale;
 
+	// TODO: Decide if this belongs here or in the camera resizer
 	public float distanceBetweenDots = 1.0f;
+	private Camera mainCamera;
 
 	public int WIDTH = 6;
 	public int HEIGHT = 6;
@@ -28,9 +30,7 @@ public class GridManager : MonoBehaviour {
 	void Start() {
 		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
 
-
 		TOTAL_HEIGHT = HEIGHT * 2;
-
 		grid = new DotGrid(WIDTH, TOTAL_HEIGHT);
 
 		for (int y = 0; y < HEIGHT; y++) {
@@ -39,12 +39,9 @@ public class GridManager : MonoBehaviour {
 			}
 		}
 
-		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
-		if (dotColorStrategy == null) {
-			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
-		}
-
+		InitializeDotColorStrategy();
 		InitializeCamera();
+		dropHeight = (2 * mainCamera.orthographicSize) - distanceBetweenDots;
 
 		// TODO: Look into initializing array above dots and then dropping all of them
 	}
@@ -60,34 +57,17 @@ public class GridManager : MonoBehaviour {
 		grid.AddDot(x, y, newDot, colorPool.GetRandomColor());
 	}
 
-	// TODO: Determine if this should live somewhere else
 	private void InitializeCamera() {
-		float horizontalBuffer = 1.0f;
-		float verticalBuffer = 1.0f;
-		float contentWidth = WIDTH * distanceBetweenDots + (2.0f * horizontalBuffer);
-		float contentHeight = HEIGHT * distanceBetweenDots + (2.0f * verticalBuffer);
+		mainCamera = Camera.main;
+		mainCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
+	}
 
-		Camera mainCamera = Camera.main;
-
-		float minCameraSize = contentHeight;
-		float cameraWidthWithMinCameraSize = minCameraSize * mainCamera.aspect;
-
-		if (cameraWidthWithMinCameraSize < contentWidth) {
-			float expandWidthAmount = contentWidth - cameraWidthWithMinCameraSize;
-			float expandHeightAmount = expandWidthAmount / mainCamera.aspect;
-			minCameraSize += expandHeightAmount;
-		}
-
-		minCameraSize *= 0.5f;
-
-		mainCamera.orthographicSize = minCameraSize;
+	private void InitializeDotColorStrategy() {
+		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
 		
-		float cameraX = WIDTH * distanceBetweenDots * 0.5f;
-		float cameraY = HEIGHT * distanceBetweenDots * 0.5f;
-		mainCamera.gameObject.transform.position = new Vector3(cameraX, cameraY, -1);
-
-		// Ensure dots always drop from above the top of the screen
-		dropHeight = (2 * minCameraSize) - distanceBetweenDots;
+		if (dotColorStrategy == null) {
+			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
+		}
 	}
 
 	public void SelectDot(GameObject dot) {
