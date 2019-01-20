@@ -87,7 +87,6 @@ public class DotGrid {
 	}
 
 	public void RemoveAllDotsOfColor(Color c) {
-		List<Vector2Int> coordsList = new List<Vector2Int>();
 		for (int y = 0; y < PlayableHeight(); y++) {
 			for (int x = 0; x < Width(); x++) {
 				if (GetColor(x, y) == c) {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
+// TODO Rename
 public class GridManager : MonoBehaviour {
 	public GameObject dotPrefab;
 	public CurrentColor currentColorStore;
@@ -162,7 +163,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void AssignColorsToNewDots() {
-		dotColorStrategy.AssignColors(grid, colorPool.availableColors);
+		dotColorStrategy.AssignColors(grid, colorPool);
 	}
 
 	private GameObject SecondToLastSelectedDot() {

@@ -3,9 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class BaseDotColorStrategy : MonoBehaviour {
-	// TODO: There is a ton of boilerplate in the derived classes.
-	// Look into DRYing it up here
+	public void AssignColors(DotGrid grid, ColorPool colors) {
+		int columns = grid.Width();
+		int rows = grid.Height();
+		int startingRow = grid.PlayableHeight();
 
-	// TODO: Also consider passing a ColorPool instead of Color[]
-	public abstract void AssignColors(DotGrid dots, Color[] colors);
+		PreLoop(colors);
+
+		for (int y = startingRow; y < rows; y++) {
+			for (int x = 0; x < columns; x++) {
+				if (grid.CellIsOccupied(x, y)) {
+					AssignColor(grid, colors, x, y);
+				}
+			}
+		}
+
+		PostLoop(colors);
+	}
+
+	protected virtual void PreLoop(ColorPool colors) { }
+	protected abstract void AssignColor(DotGrid grid, ColorPool colors, int x, int y);
+	protected virtual void PostLoop(ColorPool colors) { }
 }
