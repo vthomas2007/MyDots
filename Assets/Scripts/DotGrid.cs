@@ -21,18 +21,17 @@ public class DotGrid {
 		gridHeight = height;
 	}
 
-	// TODO: Add getter to cell even if it's just to use internally
 	public void AddDot(int x, int y, GameObject dot, Color color) {
-		grid[x, y].dot = dot;
-		grid[x, y].SetColor(color);
+		Cell(x, y).dot = dot;
+		Cell(x, y).SetColor(color);
 	}
 
 	public Color GetColor(int x, int y) {
-		return grid[x, y].Color();
+		return Cell(x, y).Color();
 	}
 
 	public void SetColor(int x, int y, Color c) {
-		grid[x, y].SetColor(c);
+		Cell(x, y).SetColor(c);
 	}
 	
 	public int Width() {
@@ -43,10 +42,8 @@ public class DotGrid {
 		return gridHeight;
 	}
 
-	// TODO: Determine if it makes sense to consolidate everything to either
-	// using 2 ints or a Vector2Int
 	public GameObject GetDot(int x, int y) {
-		return grid[x, y].dot;
+		return Cell(x, y).dot;
 	}
 
 	public GameObject GetDot(Vector2Int coords) {
@@ -88,8 +85,8 @@ public class DotGrid {
 		// area)
 		int destinationRow = FirstEmptyRowInColum(x);
 
-		grid[x, destinationRow].dot = dot;
-		grid[x, y].dot = null;
+		Cell(x, destinationRow).dot = dot;
+		Cell(x, y).dot = null;
 	}
 
 	private int FirstEmptyRowInColum(int x) {
@@ -103,7 +100,7 @@ public class DotGrid {
 	}
 	
 	public bool CellIsEmpty(int x, int y) {
-		return grid[x, y].dot == null;
+		return Cell(x, y).dot == null;
 	}
 
 	public bool CellIsOccupied(int x, int y) {
@@ -111,10 +108,14 @@ public class DotGrid {
 	}
 
 	public void MoveDot(int x, int yDestination, int ySource) {
-		grid[x, yDestination].dot = grid[x, ySource].dot;
-		grid[x, yDestination].dot.SetActive(true);
-		grid[x, yDestination].SetColor(grid[x, ySource].Color());
+		Cell(x, yDestination).dot = Cell(x, ySource).dot;
+		Cell(x, yDestination).dot.SetActive(true);
+		Cell(x, yDestination).SetColor(Cell(x, ySource).Color());
 
-		grid[x, ySource].dot = null;
+		Cell(x, ySource).dot = null;
+	}
+
+	private DotCell Cell(int x, int y) {
+		return grid[x, y];
 	}
 }
