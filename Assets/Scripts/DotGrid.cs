@@ -68,6 +68,13 @@ public class DotGrid {
 		throw new Exception("Unable to find dot");
 	}
 	
+	public bool DotsAreAdjacent(GameObject dot1, GameObject dot2) {
+		Vector2Int v1 = GetCoordinatesOfDot(dot1);
+		Vector2Int v2 = GetCoordinatesOfDot(dot2);
+
+		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
+	}
+
 	public void RemoveDotAtCoords(Vector2Int coords) {
 		RemoveDotAtCoords(coords.x, coords.y);
 	}

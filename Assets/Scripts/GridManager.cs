@@ -92,7 +92,7 @@ public class GridManager : MonoBehaviour {
 
 		// TODO: Consider reworking this to use coords & leverage
 		// the grid to get the color instead of reaching into the dot
-		if (lastSelectedDot != null && DotsAreAdjacent(dot, lastSelectedDot)) {
+		if (lastSelectedDot != null && grid.DotsAreAdjacent(dot, lastSelectedDot)) {
 			if (dot == GetSecondToLastSelectedDot()) {
 				Backtrack();
 			}
@@ -183,13 +183,6 @@ public class GridManager : MonoBehaviour {
 		}
 
 		return null;
-	}
-
-	private bool DotsAreAdjacent(GameObject dot1, GameObject dot2) {
-		Vector2Int v1 = grid.GetCoordinatesOfDot(dot1);
-		Vector2Int v2 = grid.GetCoordinatesOfDot(dot2);
-
-		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
 	}
 
 	private Color GetDotColor(GameObject dot) {
