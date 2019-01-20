@@ -6,8 +6,7 @@ public class CameraResizer : MonoBehaviour {
 	public float horizontalBuffer = 1.0f;
 	public float verticalBuffer = 1.0f;
 
-	// Called "myCamera" to avoid unity warning about overriding
-	// Component.camera
+	// Called "myCamera" to fix Unity warning about overriding Component.camera
 	private Camera myCamera;
 
 	public void Start() {
@@ -36,9 +35,5 @@ public class CameraResizer : MonoBehaviour {
 		float cameraX = gridWidth * distanceBetweenDots * 0.5f;
 		float cameraY = gridHeight * distanceBetweenDots * 0.5f;
 		myCamera.gameObject.transform.position = new Vector3(cameraX, cameraY, -1);
-	}
-
-	public float DistanceFromTopOfGridToTopOfCamera(float distanceBetweenDots) {
-		return (2 * myCamera.orthographicSize) - distanceBetweenDots;
 	}
 }

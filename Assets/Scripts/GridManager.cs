@@ -12,9 +12,9 @@ public class GridManager : MonoBehaviour {
 	public float dotScaleFactor = .5f;
 	private Vector2 dotScale;
 
-	// TODO: Decide if this belongs here or in the camera resizer
 	public float distanceBetweenDots = 1.0f;
-	private Camera mainCamera;
+
+	public GameObject gridCamera;
 
 	public int WIDTH = 6;
 	public int HEIGHT = 6;
@@ -41,7 +41,8 @@ public class GridManager : MonoBehaviour {
 
 		InitializeDotColorStrategy();
 		InitializeCamera();
-		dropHeight = (2 * mainCamera.orthographicSize) - distanceBetweenDots;
+		// TODO: Figure out where to put this
+		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
 
 		// TODO: Look into initializing array above dots and then dropping all of them
 	}
@@ -58,8 +59,7 @@ public class GridManager : MonoBehaviour {
 	}
 
 	private void InitializeCamera() {
-		mainCamera = Camera.main;
-		mainCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
+		gridCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
 	}
 
 	private void InitializeDotColorStrategy() {
