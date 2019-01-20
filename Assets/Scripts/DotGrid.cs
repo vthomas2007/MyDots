@@ -7,6 +7,7 @@ public class DotGrid {
 	private DotCell[,] grid;
 	private int gridWidth;
 	private int gridHeight;
+	private int playableHeight;
 
 	public DotGrid(int width, int height) {
 		grid = new DotCell[width, height];
@@ -19,11 +20,16 @@ public class DotGrid {
 
 		gridWidth = width;
 		gridHeight = height;
+		playableHeight = gridHeight / 2;
 	}
 
 	public void AddDot(int x, int y, GameObject dot, Color color) {
 		Cell(x, y).dot = dot;
 		Cell(x, y).SetColor(color);
+	}
+
+	public Color GetColor(Vector2Int coords) {
+		return GetColor(coords.x, coords.y);
 	}
 
 	public Color GetColor(int x, int y) {
@@ -40,6 +46,10 @@ public class DotGrid {
 
 	public int Height() {
 		return gridHeight;
+	}
+
+	public int PlayableHeight() {
+		return playableHeight;
 	}
 
 	public GameObject GetDot(int x, int y) {
@@ -76,6 +86,23 @@ public class DotGrid {
 		RemoveDotAtCoords(coords.x, coords.y);
 	}
 
+	public void RemoveAllDotsOfColor(Color c) {
+		List<Vector2Int> coordsList = new List<Vector2Int>();
+		for (int y = 0; y < PlayableHeight(); y++) {
+			for (int x = 0; x < Width(); x++) {
+				if (GetColor(x, y) == c) {
+					RemoveDotAtCoords(x, y);
+				}
+			}
+		}
+	}
+
+	public void RemoveDots(List<Vector2Int> dotCoords) {
+		foreach (Vector2Int coords in dotCoords) {
+			RemoveDotAtCoords(coords);
+		}
+	}
+
 	public void RemoveDotAtCoords(int x, int y) {
 		GameObject dot = GetDot(x, y);
 		dot.SetActive(false);
@@ -90,12 +117,11 @@ public class DotGrid {
 	}
 
 	private int FirstEmptyRowInColum(int x) {
-		int y = gridHeight / 2; // TODO Fix
+		int y = PlayableHeight();
 		while (CellIsOccupied(x, y)) {
 			y++;
 		}
 
-		// TODO: Throw exception if exceeds TOTAL_HEIGHT
 		return y;
 	}
 	
@@ -107,7 +133,7 @@ public class DotGrid {
 		return !CellIsEmpty(x, y);
 	}
 
-	public void MoveDot(int x, int yDestination, int ySource) {
+	public void MoveDot(int x, int ySource, int yDestination) {
 		Cell(x, yDestination).dot = Cell(x, ySource).dot;
 		Cell(x, yDestination).dot.SetActive(true);
 		Cell(x, yDestination).SetColor(Cell(x, ySource).Color());
