@@ -1,8 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System; // Exception
 
 public class Dropper : MonoBehaviour {
+	public Animator animator;
+
+	public enum AnimationType {
+		SmallBounce,
+		LargeBounce
+	}
+	private AnimationType animationType;
+
 	private float startTime;
 	private Vector3 startPosition;
 	private Vector3 stopPosition;
@@ -11,9 +20,10 @@ public class Dropper : MonoBehaviour {
 
 	private bool isDropping = false;
 
-	public void Drop(Vector3 startPos, Vector3 stopPos) {
+	public void Drop(Vector3 startPos, Vector3 stopPos, AnimationType animType) {
 		startTime = Time.time;
 		isDropping = true;
+		animationType = animType;
 
 		startPosition = startPos;
 		gameObject.transform.position = startPosition;
@@ -31,8 +41,19 @@ public class Dropper : MonoBehaviour {
 				0
 			);
 
-			if (t > 1.0f) {
+			// TODO
+			if (t >= 0.99f) {
 				isDropping = false;
+				switch (animationType) {
+					case AnimationType.SmallBounce:
+						animator.SetTrigger("SmallBounce");
+						break;
+					case AnimationType.LargeBounce:
+						animator.SetTrigger("LargeBounce");
+						break;
+					default:
+						throw new Exception("Invalid animation type provided to Drop.");
+				}
 			}
 		}
 	}

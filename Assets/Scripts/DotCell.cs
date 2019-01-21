@@ -8,7 +8,7 @@ public class DotCell {
 
 	public void SetColor(Color c) {
 		color = c;
-		dot.GetComponent<SpriteRenderer>().color = c;
+		dot.GetComponentInChildren<SpriteRenderer>().color = c;
 	}
 
 	public Color Color() {

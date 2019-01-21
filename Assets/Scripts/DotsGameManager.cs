@@ -113,14 +113,19 @@ public class DotsGameManager : MonoBehaviour {
 		grid.MoveDot(x, ySource, yDestination);
 
 		// Handle animation
+		Dropper.AnimationType animationType;
 		float startingY = ySource * distanceBetweenDots;
 		if (ySource >= HEIGHT) {
 			startingY += dropHeight;
+			animationType = Dropper.AnimationType.LargeBounce;
+		}
+		else {
+			animationType = Dropper.AnimationType.SmallBounce;
 		}
 
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition);
+		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition, animationType);
 	}
 
 	public void SelectDot(GameObject dot) {
@@ -190,7 +195,6 @@ public class DotsGameManager : MonoBehaviour {
 		return currentColorStore.currentColor;
 	}
 	
-
 	public void RemoveAndDropDots() {
 		if (selectedDotIndices.Count > 1) {
 			RemoveDots();
