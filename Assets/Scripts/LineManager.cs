@@ -33,7 +33,7 @@ public class LineManager : MonoBehaviour {
 		lineToCursorRenderer.enabled = false;
 	}
 	
-	public void AddLine(GameObject sourceDot, GameObject destinationDot) {
+	public void AddLineBetweenDots(GameObject sourceDot, GameObject destinationDot) {
 		GameObject newLine;
 		if (linePool.Count > 0) {
 			newLine = linePool.Dequeue();

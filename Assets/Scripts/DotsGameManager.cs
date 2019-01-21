@@ -30,9 +30,9 @@ public class DotsGameManager : MonoBehaviour {
 
 		InitializeDots();
 		InitializeCamera();
+		CalculateDropHeight();
 		InitializeDotColorStrategy();
 		AssignColorsToNewDots();
-		CalculateDropHeight();
 		DropDots();
 	}
 
@@ -62,6 +62,10 @@ public class DotsGameManager : MonoBehaviour {
 		gridCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
 	}
 
+	private void CalculateDropHeight() {
+		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
+	}
+
 	private void InitializeDotColorStrategy() {
 		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
 		
@@ -70,8 +74,53 @@ public class DotsGameManager : MonoBehaviour {
 		}
 	}
 
-	private void CalculateDropHeight() {
-		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
+	private void AssignColorsToNewDots() {
+		dotColorStrategy.AssignColors(grid, colorPool);
+	}
+
+	private void DropDots() {
+		for (int y = 0; y < HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				if (grid.CellIsEmpty(x, y)) {
+					DropDotIntoCoords(x, y);
+				}
+			}
+		}
+	}
+
+	private void DropDotIntoCoords(int x, int yDestination) {
+		int ySource = YCoordinateOfNextHighestDot(x, yDestination);
+
+		if (grid.CellIsOccupied(x, ySource)) {
+			MoveDot(x, ySource, yDestination);
+		}
+		else {
+			throw new Exception("Unable to find dot to drop.");
+		}
+	}
+
+	private int YCoordinateOfNextHighestDot(int x, int y) {
+		int ySource = y;
+
+		while (grid.CellIsEmpty(x, ySource) && ySource < TOTAL_HEIGHT) {
+			ySource++;
+		}
+
+		return ySource;
+	}
+
+	private void MoveDot(int x, int ySource, int yDestination) {
+		grid.MoveDot(x, ySource, yDestination);
+
+		// Handle animation
+		float startingY = ySource * distanceBetweenDots;
+		if (ySource >= HEIGHT) {
+			startingY += dropHeight;
+		}
+
+		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
+		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
+		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 
 	public void SelectDot(GameObject dot) {
@@ -91,6 +140,15 @@ public class DotsGameManager : MonoBehaviour {
 		}
 	}
 
+	private GameObject GetLastSelectedDot() {
+		if (selectedDotIndices.Count > 0) {
+			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 1];
+			return grid.GetDot(coords.x, coords.y);
+		}
+
+		return null;
+	}
+
 	public void AddToOrRemoveFromSelectedList(GameObject dot) {
 		GameObject lastSelectedDot = GetLastSelectedDot();
 
@@ -104,12 +162,26 @@ public class DotsGameManager : MonoBehaviour {
 		}
 	}
 
+	private GameObject SecondToLastSelectedDot() {
+		if (selectedDotIndices.Count > 1) {
+			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
+			return grid.GetDot(coords);
+		}
+
+		return null;
+	}
+
+	private void Backtrack() {
+		selectedDotIndices.RemoveAt(selectedDotIndices.Count - 1);
+		lineManager.RemoveLastLine();
+	}
+
 	private void AddToSelectedListIfColorMatches(GameObject dot) {
 		Vector2Int dotCoordinates = grid.GetCoordinatesOfDot(dot);
 		Color dotColor = grid.GetColor(dotCoordinates);
 
 		if (CurrentColor() == dotColor) {
-			lineManager.AddLine(GetLastSelectedDot(), dot);
+			lineManager.AddLineBetweenDots(GetLastSelectedDot(), dot);
 			selectedDotIndices.Add(dotCoordinates);
 		}
 	}
@@ -117,20 +189,7 @@ public class DotsGameManager : MonoBehaviour {
 	private Color CurrentColor() {
 		return currentColorStore.currentColor;
 	}
-
-	private GameObject GetLastSelectedDot() {
-		if (selectedDotIndices.Count > 0) {
-			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 1];
-			return grid.GetDot(coords.x, coords.y);
-		}
-
-		return null;
-	}
 	
-	private void Backtrack() {
-		selectedDotIndices.RemoveAt(selectedDotIndices.Count - 1);
-		lineManager.RemoveLastLine();
-	}
 
 	public void RemoveAndDropDots() {
 		if (selectedDotIndices.Count > 1) {
@@ -163,62 +222,5 @@ public class DotsGameManager : MonoBehaviour {
 		}
 
 		return false;
-	}
-
-	private void AssignColorsToNewDots() {
-		dotColorStrategy.AssignColors(grid, colorPool);
-	}
-
-	private GameObject SecondToLastSelectedDot() {
-		if (selectedDotIndices.Count > 1) {
-			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
-			return grid.GetDot(coords);
-		}
-
-		return null;
-	}
-
-	private void DropDots() {
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				if (grid.CellIsEmpty(x, y)) {
-					DropDotIntoCoords(x, y);
-				}
-			}
-		}
-	}
-
-	private void DropDotIntoCoords(int x, int yDestination) {
-		int ySource = YIndexToDropFrom(x, yDestination);
-		
-		if (grid.CellIsOccupied(x, ySource)) {
-			MoveDot(x, ySource, yDestination);
-		}
-		else {
-			throw new Exception("Unable to drop dot");
-		}
-	}
-
-	private int YIndexToDropFrom(int x, int y) {
-		int ySource = y;
-
-		while (grid.CellIsEmpty(x, ySource) && ySource < TOTAL_HEIGHT) {
-			ySource++;
-		}
-
-		return ySource;
-	}
-
-	private void MoveDot(int x, int ySource, int yDestination) {
-		grid.MoveDot(x, ySource, yDestination);
-
-		float startingY = ySource * distanceBetweenDots;
-		if (ySource >= HEIGHT) {
-			startingY += dropHeight;
-		}
-
-		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
-		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 }
