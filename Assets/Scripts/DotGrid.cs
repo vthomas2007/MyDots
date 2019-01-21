@@ -60,9 +60,6 @@ public class DotGrid {
 		return GetDot(coords.x, coords.y);
 	}
 
-	// TODO: Determine if it makes sense for this grid to "know" about the
-	// distinction between playable and total height.
-	// One option would be an optional parameter that caps the  
 	public Vector2Int GetCoordinatesOfDot(GameObject dot) {
 		for (int y = 0; y < Height(); y++) {
 			for (int x = 0; x < Width(); x++) {
@@ -106,9 +103,8 @@ public class DotGrid {
 		GameObject dot = GetDot(x, y);
 		dot.SetActive(false);
 
-		// Recycle dot by moving it to the top of the column
-		// (which should always work out to be above the playable
-		// area)
+		// Recycle dot by moving it to the top of the column (which
+		// should always work out to be above the playable area)
 		int destinationRow = FirstEmptyRowInColum(x);
 
 		Cell(x, destinationRow).dot = dot;

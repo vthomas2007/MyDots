@@ -10,8 +10,6 @@ public class DotsGameManager : MonoBehaviour {
 	public ColorPool colorPool;
 
 	public float dotScaleFactor = .5f;
-	private Vector2 dotScale;
-
 	public float distanceBetweenDots = 1.0f;
 
 	public GameObject gridCamera;
@@ -28,28 +26,30 @@ public class DotsGameManager : MonoBehaviour {
 	private BaseDotColorStrategy dotColorStrategy;
 
 	void Start() {
-		dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
-
 		TOTAL_HEIGHT = HEIGHT * 2;
-		grid = new DotGrid(WIDTH, TOTAL_HEIGHT);
 
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				CreateDot(x, y);
-			}
-		}
-
-		InitializeDotColorStrategy();
+		InitializeDots();
 		InitializeCamera();
-		// TODO: Figure out where to put this
-		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
-
-		// TODO: Look into initializing array above dots and then dropping all of them
+		InitializeDotColorStrategy();
+		AssignColorsToNewDots();
+		CalculateDropHeight();
+		DropDots();
 	}
 
-	private void CreateDot(int x, int y) {
+	private void InitializeDots() {
+		grid = new DotGrid(WIDTH, TOTAL_HEIGHT);
+
+		Vector2 dotScale = new Vector2(dotScaleFactor, dotScaleFactor);
+		for (int y = HEIGHT; y < TOTAL_HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
+				CreateDot(x, y, dotScale);
+			}
+		}
+	}
+
+	private void CreateDot(int x, int y, Vector2 scale) {
 		GameObject newDot = Instantiate(dotPrefab, new Vector3((float)x * distanceBetweenDots, (float)y * distanceBetweenDots), Quaternion.identity);
-		newDot.transform.localScale = dotScale;
+		newDot.transform.localScale = scale;
 
 		if (y >= HEIGHT) {
 			newDot.SetActive(false);
@@ -68,6 +68,10 @@ public class DotsGameManager : MonoBehaviour {
 		if (dotColorStrategy == null) {
 			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
 		}
+	}
+
+	private void CalculateDropHeight() {
+		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
 	}
 
 	public void SelectDot(GameObject dot) {
@@ -174,15 +178,6 @@ public class DotsGameManager : MonoBehaviour {
 		return null;
 	}
 
-	private Color GetDotColor(GameObject dot) {
-		if (dot != null) {
-			// TODO: Again, figure out how if there's a way around checking GetComponent so many times
-			return dot.GetComponent<SpriteRenderer>().color;
-		}
-
-		throw new Exception("Trying to get color for a dot that doesn't exist");
-	}
-
 	private void DropDots() {
 		for (int y = 0; y < HEIGHT; y++) {
 			for (int x = 0; x < WIDTH; x++) {
@@ -224,7 +219,6 @@ public class DotsGameManager : MonoBehaviour {
 
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		// TODO: See if this GetComponent call is necessary
 		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition);
 	}
 }

@@ -10,8 +10,7 @@ public class LineManager : MonoBehaviour {
 	public float lineWidth = 0.25f;
 
 	private GameObject lineToCursorGameObject;
-	private LineRenderer lineToCursor;
-	private Vector3 lineToCursorCoords;
+	private LineRenderer lineToCursorRenderer;
 
 	private List<GameObject> lines;
 	private Material lineMaterial;
@@ -22,12 +21,16 @@ public class LineManager : MonoBehaviour {
 		lines = new List<GameObject>();
 		lineMaterial = new Material(Shader.Find("Sprites/Default"));
 
+		InitializeLineToCursor();
+	}
+
+	private void InitializeLineToCursor() {
 		lineToCursorGameObject = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 
-		lineToCursor = lineToCursorGameObject.GetComponent<LineRenderer>();
-		lineToCursor.material = lineMaterial;
-		lineToCursor.widthMultiplier = lineWidth;
-		lineToCursor.enabled = false;
+		lineToCursorRenderer = lineToCursorGameObject.GetComponent<LineRenderer>();
+		lineToCursorRenderer.material = lineMaterial;
+		lineToCursorRenderer.widthMultiplier = lineWidth;
+		lineToCursorRenderer.enabled = false;
 	}
 	
 	public void AddLine(GameObject sourceDot, GameObject destinationDot) {
@@ -40,7 +43,6 @@ public class LineManager : MonoBehaviour {
 			newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 		}
 
-		// TODO: Figure out a way to avoid GetComponent if possible
 		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
 		lineRenderer.material = lineMaterial;
 		lineRenderer.widthMultiplier = lineWidth;
@@ -58,15 +60,15 @@ public class LineManager : MonoBehaviour {
 	}
 
 	public void DrawLineToCursorFromDot(GameObject dot) {
-		lineToCursorCoords = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		lineToCursorCoords.z = 0;
+		Vector3 cursorCoords = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		cursorCoords.z = 0;
 
 		Vector3[] points = new Vector3[2];
 
 		points[0] = dot.transform.position;
-		points[1] = lineToCursorCoords;
+		points[1] = cursorCoords;
 
-		lineToCursor.SetPositions(points);
+		lineToCursorRenderer.SetPositions(points);
 	}
 
 	public void RemoveLastLine() {
@@ -90,8 +92,8 @@ public class LineManager : MonoBehaviour {
 	}
 
 	private void UpdateLineToCursorColor(Color c) {
-		lineToCursor.startColor = c;
-		lineToCursor.endColor = c;
+		lineToCursorRenderer.startColor = c;
+		lineToCursorRenderer.endColor = c;
 	}
 
 	public void DisableLineToCursor() {
@@ -99,6 +101,6 @@ public class LineManager : MonoBehaviour {
 	}
 
 	private void SetLineToCursorEnabled(bool enabled) {
-		lineToCursor.enabled = enabled;
+		lineToCursorRenderer.enabled = enabled;
 	}
 }
