@@ -17,25 +17,22 @@ public class Dropper : MonoBehaviour {
 	private Vector3 stopPosition;
 	private float animationDelay;
 	
-	public float duration;
+	public float dropDuration;
 
 	private bool isDropping = false;
 
-	// TODO Rename stuff
-	public void Drop(Vector3 startPos, Vector3 stopPos, AnimationType animType, float d = 0.1f, float delay = 0.0f) {
+	public void Drop(Vector3 startPos, Vector3 stopPos, AnimationType animType, float duration = 0.1f, float delay = 0.0f) {
+		startPosition = startPos;
+		stopPosition = stopPos;
 		animationType = animType;
-		duration = d;
+		dropDuration = duration;
 		animationDelay = delay;
 
-		startPosition = startPos;
 		gameObject.transform.position = startPosition;
 
-		stopPosition = stopPos;
-
-		IEnumerator coroutine = EnableIsDropping();
-		StartCoroutine(coroutine);
+		StartCoroutine(EnableDropAfterDelay());
 	}
-	private IEnumerator EnableIsDropping() {
+	private IEnumerator EnableDropAfterDelay() {
 		yield return new WaitForSeconds(animationDelay);
 		isDropping = true;
 		startTime = Time.time;
@@ -43,7 +40,7 @@ public class Dropper : MonoBehaviour {
 
 	void Update() {
 		if (isDropping) {
-			float t = (Time.time - startTime) / duration;
+			float t = (Time.time - startTime) / dropDuration;
 			
 			gameObject.transform.position = new Vector3(
 				Mathf.SmoothStep(startPosition.x, stopPosition.x, t),
@@ -51,17 +48,16 @@ public class Dropper : MonoBehaviour {
 				0
 			);
 
-			// TODO
-			if (t >= 0.98f) {
+			if (t > 1.0f) {
 				isDropping = false;
 				gameObject.transform.position = stopPosition;
 
 				switch (animationType) {
 					case AnimationType.SmallBounce:
-						animator.SetTrigger("SmallBounce");
+						animator.Play("SmallBounce");
 						break;
 					case AnimationType.LargeBounce:
-						animator.SetTrigger("LargeBounce");
+						animator.Play("LargeBounce");
 						break;
 					default:
 						throw new Exception("Invalid animation type provided to Drop.");

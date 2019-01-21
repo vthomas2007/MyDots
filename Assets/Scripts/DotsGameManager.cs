@@ -82,12 +82,16 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		for (int x = 0; x < WIDTH; x++) {
-			int dotsDroppedInColumnSoFar = 0;
-			for (int y = 0; y < HEIGHT; y++) {
+		int[] dotsDroppedPerColumn = new int[WIDTH];
+		for (int x = 0; x < dotsDroppedPerColumn.Length; x++) {
+			dotsDroppedPerColumn[x] = 0;
+		}
+
+		for (int y = 0; y < HEIGHT; y++) {
+			for (int x = 0; x < WIDTH; x++) {
 				if (grid.CellIsEmpty(x, y)) {
-					DropDotIntoCoords(x, y, dotsDroppedInColumnSoFar);
-					dotsDroppedInColumnSoFar++;
+					DropDotIntoCoords(x, y, dotsDroppedPerColumn[x]);
+					dotsDroppedPerColumn[x]++;
 				}
 			}
 		}

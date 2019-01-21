@@ -8,6 +8,7 @@ public class DotCell {
 
 	public void SetColor(Color c) {
 		color = c;
+		// TODO: Explore alternatives
 		dot.GetComponentInChildren<SpriteRenderer>().color = c;
 	}
 
