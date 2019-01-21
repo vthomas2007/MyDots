@@ -12,7 +12,7 @@ public class CameraResizer : MonoBehaviour {
 
 	public void Resize(int gridWidth, int gridHeight, float distanceBetweenDots) {
 		// Based on the values of the buffers and the aspect ratio, this will only
-		// end up honoring one of the two buffers being set
+		// end up honoring either the horizontal or the vertical buffer
 		float contentWidth = gridWidth * distanceBetweenDots + (2.0f * horizontalBuffer);
 		float contentHeight = gridHeight * distanceBetweenDots + (2.0f * verticalBuffer);
 

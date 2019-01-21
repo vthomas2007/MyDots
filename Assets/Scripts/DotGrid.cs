@@ -76,11 +76,7 @@ public class DotGrid {
 		Vector2Int v1 = GetCoordinatesOfDot(dot1);
 		Vector2Int v2 = GetCoordinatesOfDot(dot2);
 
-		return (int)(Mathf.Abs(v1.x - v2.x) + Mathf.Abs(v1.y - v2.y)) == 1;
-	}
-
-	public void RemoveDotAtCoords(Vector2Int coords) {
-		RemoveDotAtCoords(coords.x, coords.y);
+		return (int)(Vector2Int.Distance(v1, v2)) == 1;
 	}
 
 	public void RemoveAllDotsOfColor(Color c) {
@@ -97,6 +93,10 @@ public class DotGrid {
 		foreach (Vector2Int coords in dotCoords) {
 			RemoveDotAtCoords(coords);
 		}
+	}
+
+	public void RemoveDotAtCoords(Vector2Int coords) {
+		RemoveDotAtCoords(coords.x, coords.y);
 	}
 
 	public void RemoveDotAtCoords(int x, int y) {

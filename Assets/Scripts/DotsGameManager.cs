@@ -22,7 +22,7 @@ public class DotsGameManager : MonoBehaviour {
 	private int TOTAL_HEIGHT;
 
 	private DotGrid grid;
-	private List<Vector2Int> selectedDotIndices = new List<Vector2Int>();
+	private List<Vector2Int> connectedDotCoords = new List<Vector2Int>();
 
 	private float dropHeight;
 
@@ -67,6 +67,8 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private void CalculateDropHeight() {
+		// An offset that is used when dropping new dots to ensure they always get
+		// dropped from above the "top" of the screen
 		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
 	}
 
@@ -149,7 +151,7 @@ public class DotsGameManager : MonoBehaviour {
 
 	public void SelectDot(GameObject dot) {
 		Vector2Int coords = grid.GetCoordinatesOfDot(dot);
-		selectedDotIndices.Add(coords);
+		connectedDotCoords.Add(coords);
 
 		currentColorStore.currentColor = grid.GetColor(coords.x, coords.y);
 
@@ -165,8 +167,8 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private GameObject GetLastSelectedDot() {
-		if (selectedDotIndices.Count > 0) {
-			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 1];
+		if (connectedDotCoords.Count > 0) {
+			Vector2Int coords = connectedDotCoords[connectedDotCoords.Count - 1];
 			return grid.GetDot(coords.x, coords.y);
 		}
 
@@ -187,8 +189,8 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private GameObject SecondToLastSelectedDot() {
-		if (selectedDotIndices.Count > 1) {
-			Vector2Int coords = selectedDotIndices[selectedDotIndices.Count - 2];
+		if (connectedDotCoords.Count > 1) {
+			Vector2Int coords = connectedDotCoords[connectedDotCoords.Count - 2];
 			return grid.GetDot(coords);
 		}
 
@@ -196,7 +198,7 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private void DisconnectLastDot() {
-		selectedDotIndices.RemoveAt(selectedDotIndices.Count - 1);
+		connectedDotCoords.RemoveAt(connectedDotCoords.Count - 1);
 		lineManager.RemoveLastLine();
 	}
 
@@ -206,7 +208,7 @@ public class DotsGameManager : MonoBehaviour {
 
 		if (CurrentColor() == dotColor) {
 			lineManager.AddLineBetweenDots(GetLastSelectedDot(), dot);
-			selectedDotIndices.Add(dotCoordinates);
+			connectedDotCoords.Add(dotCoordinates);
 		}
 	}
 
@@ -215,13 +217,13 @@ public class DotsGameManager : MonoBehaviour {
 	}
 	
 	public void RemoveAndDropDots() {
-		if (selectedDotIndices.Count > 1) {
+		if (connectedDotCoords.Count > 1) {
 			RemoveDots();
 			AssignColorsToNewDots(refillDotColorStrategy);
 			DropDots();
 		}
 
-		selectedDotIndices.Clear();
+		connectedDotCoords.Clear();
 		lineManager.RemoveAllLines();
 	}
 
@@ -230,18 +232,18 @@ public class DotsGameManager : MonoBehaviour {
 			grid.RemoveAllDotsOfColor(CurrentColor());
 		}
 		else {
-			grid.RemoveDots(selectedDotIndices);
+			grid.RemoveDots(connectedDotCoords);
 		}
 	}
 
 	private bool IsLoopSelected() {
 		HashSet<Vector2Int> uniqueSelectedDots = new HashSet<Vector2Int>();
 
-		foreach (Vector2Int indices in selectedDotIndices) {
-			if (uniqueSelectedDots.Contains(indices)) {
+		foreach (Vector2Int coords in connectedDotCoords) {
+			if (uniqueSelectedDots.Contains(coords)) {
 				return true;
 			}
-			uniqueSelectedDots.Add(indices);
+			uniqueSelectedDots.Add(coords);
 		}
 
 		return false;
