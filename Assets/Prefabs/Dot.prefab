@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4868986864610312}
   - component: {fileID: 58582030032371792}
   - component: {fileID: 114454363379114338}
+  - component: {fileID: 114818977606071950}
   m_Layer: 0
   m_Name: Dot
   m_TagString: Untagged
@@ -117,7 +118,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 95440762889127740}
-  duration: 0.3
+  dropDuration: 0
+--- !u!114 &114818977606071950
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1402123787472050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74e38c97f90ebd84cac7f6f81a310fff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 212620668751955112}
 --- !u!212 &212620668751955112
 SpriteRenderer:
   m_ObjectHideFlags: 1
