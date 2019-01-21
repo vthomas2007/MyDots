@@ -113,12 +113,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &111573132 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
-    type: 2}
-  m_PrefabInternal: {fileID: 599563358}
-  m_Script: {fileID: 11500000, guid: e882cb11d9ddcae4db1dcf33e1533f02, type: 3}
 --- !u!1001 &599563358
 Prefab:
   m_ObjectHideFlags: 0
@@ -157,31 +151,6 @@ Prefab:
     - target: {fileID: 4634177081536892, guid: eff10a8676ce29c458c93c045d82a1d3, type: 2}
       propertyPath: m_RootOrder
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
-        type: 2}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114128318160629126, guid: eff10a8676ce29c458c93c045d82a1d3,
-        type: 2}
-      propertyPath: colorPool
-      value: 
-      objectReference: {fileID: 111573132}
-    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
-        type: 2}
-      propertyPath: availableColors.Array.data[0].r
-      value: 0.9019608
-      objectReference: {fileID: 0}
-    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
-        type: 2}
-      propertyPath: availableColors.Array.data[0].g
-      value: 0.85882354
-      objectReference: {fileID: 0}
-    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
-        type: 2}
-      propertyPath: availableColors.Array.data[0].b
-      value: 0.12941177
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eff10a8676ce29c458c93c045d82a1d3, type: 2}
