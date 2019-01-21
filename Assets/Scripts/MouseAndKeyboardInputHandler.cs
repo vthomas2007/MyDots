@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MouseInputHandler : MonoBehaviour {
-	private DotsGameManager gameManager;
+public class MouseAndKeyboardInputHandler : MonoBehaviour {
+	public DotsGameManager gameManager;
 
-	void Start() {
-		gameManager = gameObject.GetComponent<DotsGameManager>();
-	}
-	
 	void Update() {
+		HandleQuit();
 		HandleMouseClick();
 		HandleMouseHold();
 		HandleMouseRelease();
+	}
+
+	private void HandleQuit() {
+		if (Input.GetKey(KeyCode.Escape)) {
+			Application.Quit();
+		}
 	}
 
 	private void HandleMouseClick() {

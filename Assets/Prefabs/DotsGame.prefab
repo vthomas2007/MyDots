@@ -23,7 +23,6 @@ GameObject:
   - component: {fileID: 114191610927570362}
   - component: {fileID: 114024564765721706}
   - component: {fileID: 114136159103765162}
-  - component: {fileID: 114972180303950770}
   m_Layer: 0
   m_Name: DotsGame
   m_TagString: Untagged
@@ -72,6 +71,8 @@ MonoBehaviour:
   colorPool: {fileID: 114136159103765162}
   dotScaleFactor: 0.5
   distanceBetweenDots: 1.5
+  delayBetweenDrops: 0.1
+  dropDuration: 0.25
   gridCamera: {fileID: 0}
   WIDTH: 6
   HEIGHT: 6
@@ -105,14 +106,3 @@ MonoBehaviour:
     type: 2}
   currentColorStore: {fileID: 114024564765721706}
   lineWidth: 0.25
---- !u!114 &114972180303950770
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1551573885196254}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e758d65f6a6e00542851b3b5074cd961, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
