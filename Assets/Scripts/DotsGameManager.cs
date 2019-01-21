@@ -26,7 +26,8 @@ public class DotsGameManager : MonoBehaviour {
 
 	private float dropHeight;
 
-	private BaseDotColorStrategy dotColorStrategy;
+	public BaseDotColorStrategy initialDotColorStrategy;
+	public BaseDotColorStrategy refillDotColorStrategy;
 
 	void Start() {
 		TOTAL_HEIGHT = HEIGHT * 2;
@@ -34,8 +35,8 @@ public class DotsGameManager : MonoBehaviour {
 		InitializeDots();
 		InitializeCamera();
 		CalculateDropHeight();
-		InitializeDotColorStrategy();
-		AssignColorsToNewDots();
+		InitializeDotColorStrategies();
+		AssignColorsToNewDots(initialDotColorStrategy);
 		DropDots();
 	}
 
@@ -69,16 +70,18 @@ public class DotsGameManager : MonoBehaviour {
 		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
 	}
 
-	private void InitializeDotColorStrategy() {
-		dotColorStrategy = gameObject.GetComponent<BaseDotColorStrategy>();
-		
-		if (dotColorStrategy == null) {
-			dotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
+	private void InitializeDotColorStrategies() {
+		if (initialDotColorStrategy == null) {
+			initialDotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
+		}
+
+		if (refillDotColorStrategy == null) {
+			refillDotColorStrategy = gameObject.AddComponent<RandomDotColorStrategy>();
 		}
 	}
 
-	private void AssignColorsToNewDots() {
-		dotColorStrategy.AssignColors(grid, colorPool);
+	private void AssignColorsToNewDots(BaseDotColorStrategy colorStrategy) {
+		colorStrategy.AssignColors(grid, colorPool);
 	}
 
 	private void DropDots() {
@@ -214,7 +217,7 @@ public class DotsGameManager : MonoBehaviour {
 	public void RemoveAndDropDots() {
 		if (selectedDotIndices.Count > 1) {
 			RemoveDots();
-			AssignColorsToNewDots();
+			AssignColorsToNewDots(refillDotColorStrategy);
 			DropDots();
 		}
 
