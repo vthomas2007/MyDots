@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-// TODO Rename
-public class GridManager : MonoBehaviour {
+public class DotsGameManager : MonoBehaviour {
 	public GameObject dotPrefab;
 	public CurrentColor currentColorStore;
 	public LineManager lineManager;

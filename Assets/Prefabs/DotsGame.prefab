@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1551573885196254}
+  m_IsPrefabAsset: 1
+--- !u!1 &1551573885196254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4634177081536892}
+  - component: {fileID: 114128318160629126}
+  - component: {fileID: 114191610927570362}
+  - component: {fileID: 114024564765721706}
+  - component: {fileID: 114136159103765162}
+  - component: {fileID: 114972180303950770}
+  m_Layer: 0
+  m_Name: DotsGame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4634177081536892
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.56, y: -3.99, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114024564765721706
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c54d2630360afe4a835dcac5fe76a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114128318160629126
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8620b4142a4e6a64ca72b3df4d44128a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dotPrefab: {fileID: 1402123787472050, guid: 8feb1a424bf15864f8f2b8e439cd0b1c, type: 2}
+  currentColorStore: {fileID: 114024564765721706}
+  lineManager: {fileID: 114191610927570362}
+  colorPool: {fileID: 114136159103765162}
+  dotScaleFactor: 0.5
+  distanceBetweenDots: 1.5
+  gridCamera: {fileID: 0}
+  WIDTH: 6
+  HEIGHT: 6
+--- !u!114 &114136159103765162
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e882cb11d9ddcae4db1dcf33e1533f02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  availableColors:
+  - {r: 0.8018868, g: 0.46257567, b: 0.10969208, a: 1}
+  - {r: 0.21158811, g: 0.109803915, b: 0.8, a: 1}
+  - {r: 0.109803915, g: 0.8, b: 0.736074, a: 1}
+--- !u!114 &114191610927570362
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba9857e58b4aaa24bbdcb1eba00f9084, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lineRendererPrefab: {fileID: 1577103659704402, guid: 171cace81cbd4974994e98ac55479c7d,
+    type: 2}
+  currentColorStore: {fileID: 114024564765721706}
+  lineWidth: 0.25
+--- !u!114 &114972180303950770
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e758d65f6a6e00542851b3b5074cd961, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

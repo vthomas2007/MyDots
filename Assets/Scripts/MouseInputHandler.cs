@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MouseInputHandler : MonoBehaviour {
-	private GridManager gridManager;
+	private DotsGameManager gameManager;
 
 	void Start() {
-		gridManager = gameObject.GetComponent<GridManager>();
+		gameManager = gameObject.GetComponent<DotsGameManager>();
 	}
 	
 	void Update() {
@@ -20,25 +20,25 @@ public class MouseInputHandler : MonoBehaviour {
 			GameObject clickedDot = GetDotUnderMouseCursor();
 
 			if (clickedDot != null) {
-				gridManager.SelectDot(clickedDot);
+				gameManager.SelectDot(clickedDot);
 			}
 		}
 	}
 
 	private void HandleMouseHold() {
 		if (Input.GetMouseButton(0)) {
-			gridManager.UpdateLineToCursor();
+			gameManager.UpdateLineToCursor();
 			
 			GameObject dotUnderCursor = GetDotUnderMouseCursor();
 			if (dotUnderCursor != null) {
-				gridManager.AddToOrRemoveFromSelectedList(dotUnderCursor);
+				gameManager.AddToOrRemoveFromSelectedList(dotUnderCursor);
 			}
 		}
 	}
 
 	private void HandleMouseRelease() {
 		if (Input.GetMouseButtonUp(0)) {
-			gridManager.RemoveAndDropDots();
+			gameManager.RemoveAndDropDots();
 		}
 	}
 
