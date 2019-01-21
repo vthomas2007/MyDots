@@ -6,7 +6,7 @@ public class RotatingSingleColorStrategy : BaseDotColorStrategy {
 	private int colorIndex = 0;
 
 	protected override void AssignColor(DotGrid grid, ColorPool colors, int x, int y) {
-		grid.SetColor(x, y, colors.availableColors[colorIndex]);
+		grid.SetColor(x, y, colors[colorIndex]);
 	}
 
 	protected override void PostLoop(ColorPool colors) {

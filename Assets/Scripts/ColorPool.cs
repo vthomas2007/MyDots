@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ColorPool : MonoBehaviour {
-	public Color[] availableColors;
+	[SerializeField]
+	private Color[] availableColors;
+
+	public Color this[int i] {
+		get { return availableColors[i]; }
+	}
 
 	public Color GetRandomColor() {
 		int colorIndex = UnityEngine.Random.Range(0, availableColors.Length);

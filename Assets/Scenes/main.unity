@@ -120,6 +120,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.size
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 4634177081536892, guid: eff10a8676ce29c458c93c045d82a1d3, type: 2}
       propertyPath: m_LocalPosition.x
       value: -6.56
@@ -157,6 +162,41 @@ Prefab:
       propertyPath: gridCamera
       value: 
       objectReference: {fileID: 811309316}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[0].r
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[0].g
+      value: 0.109803915
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[0].b
+      value: 0.21096084
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[3].r
+      value: 0.9339623
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[3].g
+      value: 0.92987543
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[3].b
+      value: 0.20705767
+      objectReference: {fileID: 0}
+    - target: {fileID: 114136159103765162, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: availableColors.Array.data[3].a
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eff10a8676ce29c458c93c045d82a1d3, type: 2}
   m_IsPrefabAsset: 0
