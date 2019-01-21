@@ -12,6 +12,9 @@ public class DotsGameManager : MonoBehaviour {
 	public float dotScaleFactor = .5f;
 	public float distanceBetweenDots = 1.0f;
 
+	public float delayBetweenDrops = 0.1f;
+	public float dropDuration = 0.25f;
+
 	public GameObject gridCamera;
 
 	public int WIDTH = 6;
@@ -79,20 +82,22 @@ public class DotsGameManager : MonoBehaviour {
 	}
 
 	private void DropDots() {
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
+		for (int x = 0; x < WIDTH; x++) {
+			int dotsDroppedInColumnSoFar = 0;
+			for (int y = 0; y < HEIGHT; y++) {
 				if (grid.CellIsEmpty(x, y)) {
-					DropDotIntoCoords(x, y);
+					DropDotIntoCoords(x, y, dotsDroppedInColumnSoFar);
+					dotsDroppedInColumnSoFar++;
 				}
 			}
 		}
 	}
 
-	private void DropDotIntoCoords(int x, int yDestination) {
+	private void DropDotIntoCoords(int x, int yDestination, int dotsDroppedInColumnSoFar) {
 		int ySource = YCoordinateOfNextHighestDot(x, yDestination);
 
 		if (grid.CellIsOccupied(x, ySource)) {
-			MoveDot(x, ySource, yDestination);
+			MoveDot(x, ySource, yDestination, dotsDroppedInColumnSoFar);
 		}
 		else {
 			throw new Exception("Unable to find dot to drop.");
@@ -109,10 +114,9 @@ public class DotsGameManager : MonoBehaviour {
 		return ySource;
 	}
 
-	private void MoveDot(int x, int ySource, int yDestination) {
+	private void MoveDot(int x, int ySource, int yDestination, int dotsDroppedInColumnSoFar) {
 		grid.MoveDot(x, ySource, yDestination);
 
-		// Handle animation
 		Dropper.AnimationType animationType;
 		float startingY = ySource * distanceBetweenDots;
 		if (ySource >= HEIGHT) {
@@ -123,9 +127,17 @@ public class DotsGameManager : MonoBehaviour {
 			animationType = Dropper.AnimationType.SmallBounce;
 		}
 
+		float dropDelay = dotsDroppedInColumnSoFar * delayBetweenDrops;
 		Vector3 startPosition = new Vector3((float)x * distanceBetweenDots, startingY);
 		Vector3 stopPosition = new Vector3((float)x * distanceBetweenDots, (float)yDestination * distanceBetweenDots);
-		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(startPosition, stopPosition, animationType);
+
+		grid.GetDot(x, yDestination).GetComponent<Dropper>().Drop(
+			startPosition,
+			stopPosition,
+			animationType,
+			dropDuration,
+			dropDelay
+		);
 	}
 
 	public void SelectDot(GameObject dot) {
@@ -154,15 +166,15 @@ public class DotsGameManager : MonoBehaviour {
 		return null;
 	}
 
-	public void AddToOrRemoveFromSelectedList(GameObject dot) {
+	public void ConnectOrDisconnect(GameObject dot) {
 		GameObject lastSelectedDot = GetLastSelectedDot();
 
 		if (lastSelectedDot != null && grid.DotsAreAdjacent(dot, lastSelectedDot)) {
 			if (dot == SecondToLastSelectedDot()) {
-				Backtrack();
+				DisconnectLastDot();
 			}
 			else {
-				AddToSelectedListIfColorMatches(dot);
+				ConnectIfEligible(dot);
 			}
 		}
 	}
@@ -176,12 +188,12 @@ public class DotsGameManager : MonoBehaviour {
 		return null;
 	}
 
-	private void Backtrack() {
+	private void DisconnectLastDot() {
 		selectedDotIndices.RemoveAt(selectedDotIndices.Count - 1);
 		lineManager.RemoveLastLine();
 	}
 
-	private void AddToSelectedListIfColorMatches(GameObject dot) {
+	private void ConnectIfEligible(GameObject dot) {
 		Vector2Int dotCoordinates = grid.GetCoordinatesOfDot(dot);
 		Color dotColor = grid.GetColor(dotCoordinates);
 

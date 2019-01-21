@@ -15,20 +15,30 @@ public class Dropper : MonoBehaviour {
 	private float startTime;
 	private Vector3 startPosition;
 	private Vector3 stopPosition;
+	private float animationDelay;
 	
-	public float duration = .1f;
+	public float duration;
 
 	private bool isDropping = false;
 
-	public void Drop(Vector3 startPos, Vector3 stopPos, AnimationType animType) {
-		startTime = Time.time;
-		isDropping = true;
+	// TODO Rename stuff
+	public void Drop(Vector3 startPos, Vector3 stopPos, AnimationType animType, float d = 0.1f, float delay = 0.0f) {
 		animationType = animType;
+		duration = d;
+		animationDelay = delay;
 
 		startPosition = startPos;
 		gameObject.transform.position = startPosition;
 
 		stopPosition = stopPos;
+
+		IEnumerator coroutine = EnableIsDropping();
+		StartCoroutine(coroutine);
+	}
+	private IEnumerator EnableIsDropping() {
+		yield return new WaitForSeconds(animationDelay);
+		isDropping = true;
+		startTime = Time.time;
 	}
 
 	void Update() {
@@ -42,8 +52,10 @@ public class Dropper : MonoBehaviour {
 			);
 
 			// TODO
-			if (t >= 0.99f) {
+			if (t >= 0.98f) {
 				isDropping = false;
+				gameObject.transform.position = stopPosition;
+
 				switch (animationType) {
 					case AnimationType.SmallBounce:
 						animator.SetTrigger("SmallBounce");
@@ -56,5 +68,9 @@ public class Dropper : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	private IEnumerator DelayForSeconds(float seconds) {
+		yield return new WaitForSeconds(seconds);
 	}
 }
