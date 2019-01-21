@@ -33,10 +33,10 @@ public class DotsGameManager : MonoBehaviour {
 		TOTAL_HEIGHT = HEIGHT * 2;
 
 		InitializeDots();
-		InitializeCamera();
-		CalculateDropHeight();
 		InitializeDotColorStrategies();
 		AssignColorsToNewDots(initialDotColorStrategy);
+		InitializeCamera();
+		CalculateDropHeight();
 		DropDots();
 	}
 
@@ -59,17 +59,7 @@ public class DotsGameManager : MonoBehaviour {
 			newDot.SetActive(false);
 		}
 
-		grid.AddDot(x, y, newDot, colorPool.GetRandomColor());
-	}
-
-	private void InitializeCamera() {
-		gridCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
-	}
-
-	private void CalculateDropHeight() {
-		// An offset that is used when dropping new dots to ensure they always get
-		// dropped from above the "top" of the screen
-		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
+		grid.AddDot(x, y, newDot);
 	}
 
 	private void InitializeDotColorStrategies() {
@@ -84,6 +74,16 @@ public class DotsGameManager : MonoBehaviour {
 
 	private void AssignColorsToNewDots(BaseDotColorStrategy colorStrategy) {
 		colorStrategy.AssignColors(grid, colorPool);
+	}
+
+	private void InitializeCamera() {
+		gridCamera.GetComponent<CameraResizer>().Resize(WIDTH, HEIGHT, distanceBetweenDots);
+	}
+
+	private void CalculateDropHeight() {
+		// An offset that is used when dropping new dots to ensure they always get
+		// dropped from above the "top" of the screen
+		dropHeight = (2 * gridCamera.GetComponent<Camera>().orthographicSize) - distanceBetweenDots;
 	}
 
 	private void DropDots() {

@@ -23,9 +23,8 @@ public class DotGrid {
 		playableHeight = gridHeight / 2;
 	}
 
-	public void AddDot(int x, int y, GameObject dot, Color color) {
+	public void AddDot(int x, int y, GameObject dot) {
 		Cell(x, y).dot = dot;
-		Cell(x, y).SetColor(color);
 	}
 
 	public Color GetColor(Vector2Int coords) {
