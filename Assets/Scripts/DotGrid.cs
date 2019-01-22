@@ -75,7 +75,8 @@ public class DotGrid {
 		Vector2Int v1 = GetCoordinatesOfDot(dot1);
 		Vector2Int v2 = GetCoordinatesOfDot(dot2);
 
-		return (int)(Vector2Int.Distance(v1, v2)) == 1;
+		// Manhattan distance between grid coordinates
+		return (int)(Mathf.Abs(v2.x - v1.x) + Mathf.Abs(v2.y - v1.y)) == 1;
 	}
 
 	public void RemoveAllDotsOfColor(Color c) {

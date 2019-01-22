@@ -152,6 +152,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114128318160629126, guid: eff10a8676ce29c458c93c045d82a1d3,
+        type: 2}
+      propertyPath: delayBetweenDrops
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eff10a8676ce29c458c93c045d82a1d3, type: 2}
   m_IsPrefabAsset: 0

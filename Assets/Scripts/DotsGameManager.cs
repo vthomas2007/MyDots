@@ -32,12 +32,19 @@ public class DotsGameManager : MonoBehaviour {
 	void Start() {
 		TOTAL_HEIGHT = HEIGHT * 2;
 
+		ValidateColorPool();
 		InitializeDots();
 		InitializeDotColorStrategies();
 		AssignColorsToNewDots(initialDotColorStrategy);
 		InitializeCamera();
 		CalculateDropHeight();
 		DropDots();
+	}
+
+	private void ValidateColorPool() {
+		if (colorPool == null || colorPool.Count() == 0) {
+			throw new Exception("Color pool has not been assigned or has no colors");
+		}
 	}
 
 	private void InitializeDots() {
