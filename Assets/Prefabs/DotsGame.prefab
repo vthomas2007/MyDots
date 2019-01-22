@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 114024564765721706}
   - component: {fileID: 114136159103765162}
   - component: {fileID: 114393809370921702}
+  - component: {fileID: 114619895634848040}
   m_Layer: 0
   m_Name: DotsGame
   m_TagString: Untagged
@@ -165,8 +166,8 @@ MonoBehaviour:
   gridCamera: {fileID: 1038548524705804}
   WIDTH: 6
   HEIGHT: 6
-  initialDotColorStrategy: {fileID: 0}
-  refillDotColorStrategy: {fileID: 0}
+  initialDotColorStrategy: {fileID: 114619895634848040}
+  refillDotColorStrategy: {fileID: 114619895634848040}
 --- !u!114 &114136159103765162
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -211,6 +212,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 114128318160629126}
+--- !u!114 &114619895634848040
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1551573885196254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0852354600d8d4394f7fb4ea39cf5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114828371092074934
 MonoBehaviour:
   m_ObjectHideFlags: 1

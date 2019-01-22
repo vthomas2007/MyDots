@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RandomSingleDotColorStrategy : BaseDotColorStrategy {
+// Picks a random color and assigns it to every dot that's about to be dropped
+public class RandomSingleColorStrategy : BaseDotColorStrategy {
 	private Color colorForAllDots;
 
 	protected override void PreLoop(ColorPool colors) {

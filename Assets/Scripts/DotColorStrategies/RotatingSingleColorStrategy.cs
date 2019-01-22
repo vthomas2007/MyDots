@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Assign all dots to a single color. Each time dots are dropped, rotate to the "next"
+// color in the pool and start back at the beginning when all the colors have been
+// used.
 public class RotatingSingleColorStrategy : BaseDotColorStrategy {
 	private int colorIndex = 0;
 
