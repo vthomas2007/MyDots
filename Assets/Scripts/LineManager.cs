@@ -12,13 +12,13 @@ public class LineManager : MonoBehaviour {
 	private GameObject lineToCursorGameObject;
 	private LineRenderer lineToCursorRenderer;
 
-	private List<GameObject> lines;
+	private List<Line> lines;
 	private Material lineMaterial;
 
-	private Queue<GameObject> linePool = new Queue<GameObject>();
+	private Queue<Line> linePool = new Queue<Line>();
 	
 	void Start() {
-		lines = new List<GameObject>();
+		lines = new List<Line>();
 		lineMaterial = new Material(Shader.Find("Sprites/Default"));
 
 		InitializeLineToCursor();
@@ -33,17 +33,21 @@ public class LineManager : MonoBehaviour {
 		lineToCursorRenderer.enabled = false;
 	}
 	
-	public void AddLineBetweenDots(GameObject sourceDot, GameObject destinationDot) {
-		GameObject newLine;
+	public void AddLine(GameObject sourceDot, GameObject destinationDot, Vector2Int sourceCoords, Vector2Int destinationCoords) {
+		Line newLine;
 		if (linePool.Count > 0) {
 			newLine = linePool.Dequeue();
-			newLine.SetActive(true);
+			newLine.gameObject.SetActive(true);
 		}
 		else {
-			newLine = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
+			newLine = new Line();
+			newLine.gameObject = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
 		}
 
-		LineRenderer lineRenderer = newLine.GetComponent<LineRenderer>();
+		newLine.startCoords = sourceCoords;
+		newLine.endCoords = destinationCoords;
+
+		LineRenderer lineRenderer = newLine.gameObject.GetComponent<LineRenderer>();
 		lineRenderer.material = lineMaterial;
 		lineRenderer.widthMultiplier = lineWidth;
 
@@ -72,8 +76,8 @@ public class LineManager : MonoBehaviour {
 	}
 
 	public void RemoveLastLine() {
-		GameObject lineToRemove = lines[lines.Count - 1];
-		lineToRemove.SetActive(false);
+		Line lineToRemove = lines[lines.Count - 1];
+		lineToRemove.gameObject.SetActive(false);
 		linePool.Enqueue(lineToRemove);
 		lines.RemoveAt(lines.Count - 1);
 	}
@@ -100,7 +104,24 @@ public class LineManager : MonoBehaviour {
 		SetLineToCursorEnabled(false);
 	}
 
+	public bool LineExistsBetweenCoordinates(Vector2Int dotCoords1, Vector2Int dotCoords2) {
+		foreach (Line line in lines) {
+			if (dotCoords1.Equals(line.startCoords) && dotCoords2.Equals(line.endCoords))
+				return true;
+
+			if (dotCoords1.Equals(line.endCoords) && dotCoords2.Equals(line.startCoords))
+				return true;
+		}
+		return false;
+	}
+
 	private void SetLineToCursorEnabled(bool enabled) {
 		lineToCursorRenderer.enabled = enabled;
+	}
+
+	private class Line {
+		public GameObject gameObject { get; set; }
+		public Vector2Int startCoords { get; set; }
+		public Vector2Int endCoords { get; set; }
 	}
 }

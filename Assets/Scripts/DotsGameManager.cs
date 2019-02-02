@@ -213,8 +213,10 @@ public class DotsGameManager : MonoBehaviour {
 		Vector2Int dotCoordinates = grid.GetCoordinatesOfDot(dot);
 		Color dotColor = grid.GetColor(dotCoordinates);
 
-		if (CurrentColor() == dotColor) {
-			lineManager.AddLineBetweenDots(GetLastSelectedDot(), dot);
+		Vector2Int lastSelectedCoordinates = grid.GetCoordinatesOfDot(GetLastSelectedDot());
+
+		if (CurrentColor() == dotColor && !lineManager.LineExistsBetweenCoordinates(dotCoordinates, lastSelectedCoordinates)) {
+			lineManager.AddLine(GetLastSelectedDot(), dot, lastSelectedCoordinates, dotCoordinates);
 			connectedDotCoords.Add(dotCoordinates);
 		}
 	}
